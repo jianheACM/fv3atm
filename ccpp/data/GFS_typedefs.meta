@@ -3120,12 +3120,6 @@
   units = flag
   dimensions = ()
   type = logical
-[cplchp_rad_opt]
-  standard_name = flag_for_chemistry_coupling_radiation_feedback
-  long_name = flag controlling cplchp radiation feedback (default off)
-  units = flag
-  dimensions = ()
-  type = logical
 [rrfs_smoke]
   standard_name = do_smoke_coupling
   long_name = flag controlling rrfs_smoke collection (default off)
@@ -6101,12 +6095,6 @@
 [vertmix_onoff]
   standard_name = gsd_chem_vertmix_onoff
   long_name = gsd chem vertmix onoff option not used
-  units = index
-  dimensions = ()
-  type = integer
-[gfdlmp_onoff]
-  standard_name = gsd_chem_gfdlmp_onoff
-  long_name = gsd chem gfdlmp onoff option not used
   units = index
   dimensions = ()
   type = integer

@@ -691,7 +691,6 @@ module GFS_typedefs
     logical              :: cplaqm          !< default no cplaqm collection
     logical              :: cplchm          !< default no cplchm collection
     logical              :: cplchp          !< default no cplchp collection
-    logical              :: cplchp_rad_opt  !< default no cplchp radiation feedback
     logical              :: rrfs_smoke      !< default no rrfs_smoke collection
     integer              :: dust_smoke_rrtmg_band_number !< band number to affect in rrtmg_pre from smoke and dust
     logical              :: use_cice_alb    !< default .false. - i.e. don't use albedo imported from the ice model
@@ -1440,7 +1439,6 @@ module GFS_typedefs
     integer              :: seas_emis_scheme
     real(kind=kind_phys) :: seas_emis_scale(5)
     integer              :: vertmix_onoff
-    integer              :: gfdlmp_onoff
     integer              :: aer_ra_frq
     integer              :: wetdep_ls_cplchp
     character(len=512)   :: restart_inname  ! chemistry restart input directory
@@ -2633,7 +2631,7 @@ module GFS_typedefs
       Coupling%snow_cplchp = clear_val
     endif
 
-    if (Model%cplflx .or. Model%cplchm .or. Model%cplwav) then
+    if (Model%cplflx .or. Model%cplchm .or. Model%cplchp .or. Model%cplwav) then
       !--- instantaneous quantities
       allocate (Coupling%u10mi_cpl (IM))
       allocate (Coupling%v10mi_cpl (IM))
@@ -2642,7 +2640,7 @@ module GFS_typedefs
       Coupling%v10mi_cpl = clear_val
     endif
 
-    if (Model%cplflx .or. Model%cplchm) then
+    if (Model%cplflx .or. Model%cplchm .or. Model%cplchp) then
       !--- instantaneous quantities
       allocate (Coupling%tsfci_cpl (IM))
       Coupling%tsfci_cpl = clear_val
@@ -3056,7 +3054,6 @@ module GFS_typedefs
     logical              :: cplaqm         = .false.         !< default no cplaqm collection
     logical              :: cplchm         = .false.         !< default no cplchm collection
     logical              :: cplchp         = .false.         !< default no cplchp collection
-    logical              :: cplchp_rad_opt = .false.         !< default no cplchp radiation feedback
     logical              :: rrfs_smoke     = .false.         !< default no rrfs_smoke collection
     integer              :: dust_smoke_rrtmg_band_number = 10!< band number to affect in rrtmg_pre from smoke and dust
     logical              :: use_cice_alb   = .false.         !< default no cice albedo
@@ -3588,7 +3585,6 @@ module GFS_typedefs
     integer              :: seas_emis_scheme = -1
     real(kind=kind_phys), dimension(5) :: seas_emis_scale = (/1.0,1.0,1.0,1.0,1.0/)
     integer              :: vertmix_onoff = 1
-    integer              :: gfdlmp_onoff = 1
     integer              :: aer_ra_frq = 60
     integer              :: wetdep_ls_cplchp  = 1
     character(len=512)   :: restart_inname = ''
@@ -3750,16 +3746,15 @@ module GFS_typedefs
                           !--- aerosol scavenging factors ('name:value' string array)
                                fscav_aero,                                                  &
                           !--- chem namelist
-                               cplchp_rad_opt,                              &
                                aer_bc_opt, aer_ic_opt, aer_ra_feedback, aerchem_onoff,      &
-                               bio_emiss_opt, biomass_burn_cplchp, chem_conv_tr,               &
+                               bio_emiss_opt, biomass_burn_cplchp, chem_conv_tr,            &
                                chem_in_opt, chem_opt, chemdt, cldchem_onoff,                &
-                               dmsemis_opt, dust_opt_cplchp, dust_alpha, dust_gamma,               &
+                               dmsemis_opt, dust_opt_cplchp, dust_alpha, dust_gamma,        &
                                dust_calcdrag, emiss_inpt_opt, emiss_opt,                    &
                                gas_bc_opt, gas_ic_opt, gaschem_onoff, kemit, phot_opt,      &
-                               photdt, plumerisefire_frq_cplchp, plumerise_flag, seas_opt_cplchp,         &
-                               seas_emis_scheme, seas_emis_scale, vertmix_onoff,            &
-                               gfdlmp_onoff, aer_ra_frq, wetdep_ls_cplchp,                     &
+                               photdt, plumerisefire_frq_cplchp, plumerise_flag,            &
+                               seas_opt_cplchp, seas_emis_scheme, seas_emis_scale,          &
+                               vertmix_onoff, aer_ra_frq, wetdep_ls_cplchp,                 &
                                restart_inname, restart_outname,                             &  
                           !--- RRFS smoke namelist
                                seas_opt, dust_opt, biomass_burn_opt, drydep_opt,            &
@@ -3966,7 +3961,6 @@ module GFS_typedefs
     Model%cplaqm           = cplaqm
     Model%cplchm           = cplchm .or. cplaqm
     Model%cplchp           = cplchp
-    Model%cplchp_rad_opt   = cplchp_rad_opt .and. cplchp
     Model%use_cice_alb     = use_cice_alb
     Model%cpl_imp_mrg      = cpl_imp_mrg
     Model%cpl_imp_dbg      = cpl_imp_dbg
@@ -4415,7 +4409,6 @@ module GFS_typedefs
     Model%seas_emis_scheme  = seas_emis_scheme
     Model%seas_emis_scale   = seas_emis_scale
     Model%vertmix_onoff     = vertmix_onoff
-    Model%gfdlmp_onoff      = gfdlmp_onoff
     Model%aer_ra_frq        = aer_ra_frq
     Model%wetdep_ls_cplchp  = wetdep_ls_cplchp
     Model%restart_inname    = restart_inname
@@ -4723,7 +4716,6 @@ module GFS_typedefs
     call Model%init_chemistry(tracer_types)
 
     if(Model%cplchp .and. Model%ntchm>0) then
-    Model%ntchs            = get_tracer_index(Model%tracer_names, 'so2',        Model%me, Model%master, Model%debug)
     Model%ntso2            = get_tracer_index(Model%tracer_names, 'so2',        Model%me, Model%master, Model%debug)
     Model%ntsu             = get_tracer_index(Model%tracer_names, 'sulf',       Model%me, Model%master, Model%debug)
     Model%ntdms            = get_tracer_index(Model%tracer_names, 'dms',        Model%me, Model%master, Model%debug)
@@ -5847,14 +5839,14 @@ module GFS_typedefs
       end select
     end do
 
-    if (Model%cplchp) then
-      Model%ntchs = get_tracer_index(Model%tracer_names, 'so2', Model%me, Model%master, Model%debug)
-      Model%ntchm = get_tracer_index(Model%tracer_names, 'pp10', Model%me, Model%master, Model%debug)
-      Model%ntchm = Model%ntchm - Model%ntchs + 1
-    endif
-
     if (Model%ntchm > 0) Model%ntche = Model%ntchs + Model%ntchm - 1
     if (Model%ndchm > 0) Model%ndche = Model%ndchs + Model%ndchm - 1
+
+    if (Model%cplchp) then
+      Model%ntchs = get_tracer_index(Model%tracer_names, 'so2', Model%me, Model%master, Model%debug)
+      Model%ntche = get_tracer_index(Model%tracer_names, 'pp10', Model%me, Model%master, Model%debug)
+      Model%ntchm = Model%ntche - Model%ntchs + 1
+    endif
 
   end subroutine control_chemistry_initialize
 
@@ -5970,7 +5962,6 @@ module GFS_typedefs
       print *, ' cplaqm            : ', Model%cplaqm
       print *, ' cplchm            : ', Model%cplchm
       print *, ' cplchp            : ', Model%cplchp
-      print *, ' cplchp_rad_opt    : ', Model%cplchp_rad_opt
       print *, ' rrfs_smoke        : ', Model%rrfs_smoke
       print *, ' use_cice_alb      : ', Model%use_cice_alb
       print *, ' cpl_imp_mrg       : ', Model%cpl_imp_mrg
@@ -6443,7 +6434,6 @@ module GFS_typedefs
       print *, ' seas_emis_scheme  : ', Model%seas_emis_scheme
       print *, ' seas_emis_scale   : ', Model%seas_emis_scale
       print *, ' vertmix_onoff     : ', Model%vertmix_onoff
-      print *, ' gfdlmp_onoff      : ', Model%gfdlmp_onoff
       print *, ' aer_ra_frq        : ', Model%aer_ra_frq
       print *, ' wetdep_ls_cplchp  : ', Model%wetdep_ls_cplchp
       print *, ' restart_inname    : ', Model%restart_inname
