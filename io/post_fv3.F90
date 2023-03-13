@@ -3406,7 +3406,7 @@ module post_fv3
           do l=1,lm
             do j=jsta,jend
               do i=ista, iend
-                dust(i,j,l,5) = arrayr43d(i,j,l),0.0
+                dust(i,j,l,5) = arrayr43d(i,j,l)
                 if(abs(arrayr43d(i,j,l)-fillvalue) < small) dust(i,j,l,5) = spval
               enddo
             enddo
