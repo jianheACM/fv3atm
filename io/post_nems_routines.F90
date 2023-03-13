@@ -220,7 +220,8 @@
   subroutine read_postnmlt(kpo,kth,kpv,po,th,pv,post_namelist)
 !
       use ctlblk_mod, only : komax,fileNameD3D,lsm,lsmp1,spl,spldef,  &
-                             lsmdef,ALSL,me,d3d_on,gocart_on,hyb_sigp,&
+                             lsmdef,ALSL,me,d3d_on,gocart_on,gccpp_on,&
+                             nasa_on, rdaod, hyb_sigp,                &
                              pthresh,novegtype,ivegsrc,icu_physics,   &
                              isf_surface_physics,modelname,submodelname
 !
@@ -238,7 +239,7 @@
       integer l,k
 
       namelist/nampgb/kpo,po,kth,th,kpv,pv,popascal,d3d_on,gocart_on,  &
-                      hyb_sigp
+                      gccpp_on, nasa_on, rdaod, hyb_sigp
       namelist/model_inputs/modelname,submodelname
 !---------------------------------------------------------------------
 !
@@ -254,6 +255,9 @@
       hyb_sigp    = .true.
       d3d_on      = .false.
       gocart_on   = .false.
+      gccpp_on    = .false.
+      nasa_on     = .false.
+      rdaod       = .false.
       popascal    = .false.
 !
       if (me == 0) print *,'post_namelist=',post_namelist
@@ -264,7 +268,8 @@
       close (nlunit)
       if (me == 0) then
         print*,'komax,kpo,kth,th,kpv,pv,popascal= ',komax,kpo            &
-     &  ,kth,th(1:kth),kpv,pv(1:kpv),popascal,' gocart_on=',gocart_on
+     &  ,kth,th(1:kth),kpv,pv(1:kpv),popascal,' gocart_on=',gocart_on,   &
+     &  'gccpp_on=',gccpp_on, 'nasa_on=',nasa_on, 'rdaod=',rdaod
        endif
 !
 ! set up pressure level from POSTGPVARS or DEFAULT

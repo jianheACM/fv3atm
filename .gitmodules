@@ -12,5 +12,5 @@
   branch = p8-ufs-ccpp-chem
 [submodule "upp"]
   path = upp
-  url = https://github.com/NOAA-EMC/UPP
-  branch = develop
+  url = https://github.com/zhanglikate/UPP
+  branch = p8-ufs-ccpp-chem
