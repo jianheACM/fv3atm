@@ -3103,253 +3103,8 @@ module post_fv3
               enddo
             endif
             endif
+
           
-!3d fields
-          endif
-
-! end loop ncount_field
-        enddo
-
-        if ( index(trim(wrt_int_state%wrtFB_names(ibdl)),trim(filename_base(1))) > 0)  then 
-          setvar_atmfile = .true.
-        endif
-        if ( index(trim(wrt_int_state%wrtFB_names(ibdl)),trim(filename_base(2))) > 0)   then
-          setvar_sfcfile = .true.
-        endif
-        if(mype==0) print *,'setvar_atmfile=',setvar_atmfile,'setvar_sfcfile=',setvar_sfcfile,'ibdl=',ibdl
-        deallocate(fcstField)
-
-! end file_loop_all
-      enddo file_loop_all
-
-! recompute full layer of zint
-!$omp parallel do default(none) private(i,j) shared(jsta,jend,im,lp1,spval,zint,fis,ista,iend)
-      do j=jsta,jend
-        do i=ista,iend
-          if (fis(i,j) /= spval) then
-            zint(i,j,lp1) = fis(i,j)
-            fis(i,j)      = fis(i,j) * grav
-          else
-            zint(i,j,lp1) = spval
-            fis(i,j)      = spval
-          endif
-        enddo
-      enddo
-
-      do l=lm,1,-1
-!$omp parallel do default(none) private(i,j) shared(l,jsta,jend,im,omga,wh,dpres,zint,spval,ista,iend)
-        do j=jsta,jend
-          do i=ista,iend
-            if(wh(i,j,l) /= spval) then
-              omga(i,j,l) = (-1.) * wh(i,j,l) * dpres(i,j,l)/zint(i,j,l)
-              zint(i,j,l) = zint(i,j,l) + zint(i,j,l+1)
-            else
-              omga(i,j,l) = spval
-              zint(i,j,l) = spval
-            endif
-          enddo
-        enddo
-      enddo
-!      print *,'in post_lam,omga 3d=',maxval(omga(ista:iend,jsta:jend,1)),minval(omga(ista:iend,jsta:jend,1)), &
-!           'lm=',maxval(omga(ista:iend,jsta:jend,lm)),minval(omga(ista:iend,jsta:jend,lm))
-
-! compute pint from top down
-!$omp parallel do default(none) private(i,j) shared(jsta,jend,im,ak5,pint,ista,iend)
-      do j=jsta,jend
-        do i=ista,iend
-          pint(i,j,1) = ak5(1)
-        end do
-      end do
-
-      do l=2,lp1
-!$omp parallel do default(none) private(i,j) shared(l,jsta,jend,im,pint,dpres,spval,ista,iend)
-        do j=jsta,jend
-          do i=ista,iend
-            if(dpres(i,j,l-1) /= spval) then
-              pint(i,j,l) = pint(i,j,l-1) + dpres(i,j,l-1)
-            else
-              pint(i,j,l) = spval
-            endif
-          enddo
-        enddo
-      end do
-
-!compute pmid from averaged two layer pint
-      do l=lm,1,-1
-!$omp parallel do default(none) private(i,j) shared(l,jsta,jend,im,pmid,pint,spval,ista,iend)
-        do j=jsta,jend
-          do i=ista,iend
-            if(pint(i,j,l+1) /= spval) then
-              pmid(i,j,l) = 0.5*(pint(i,j,l)+pint(i,j,l+1))
-            else
-              pmid(i,j,l) = spval
-            endif
-          enddo
-        enddo
-      enddo
-
-!$omp parallel do default(none) private(i,j) shared(jsta,jend,im,spval,pt,pd,pint,ista,iend)
-      do j=jsta,jend
-        do i=ista,iend
-          pd(i,j)     = spval
-          pint(i,j,1) = pt
-        end do
-      end do
-!      print *,'in setvar, pt=',pt,'ak5(lp1)=', ak5(lp1),'ak5(1)=',ak5(1)
-
-! compute alpint
-      do l=lp1,1,-1
-!$omp parallel do default(none) private(i,j) shared(l,jsta,jend,im,alpint,pint,spval,ista,iend)
-        do j=jsta,jend
-          do i=ista,iend
-            if(pint(i,j,l) /= spval) then
-              alpint(i,j,l) = log(pint(i,j,l))
-            else
-              alpint(i,j,l) = spval
-            endif
-          end do
-        end do
-      end do
-
-! compute zmid  
-      do l=lm,1,-1
-!$omp parallel do default(none) private(i,j) shared(l,jsta,jend,im,zmid,zint,pmid,alpint,spval,ista,iend)
-        do j=jsta,jend
-          do i=ista,iend
-            if( zint(i,j,l+1)/=spval .and. zint(i,j,l)/=spval .and. pmid(i,j,l) /= spval) then
-              zmid(i,j,l)=zint(i,j,l+1)+(zint(i,j,l)-zint(i,j,l+1))* &
-                    (log(pmid(i,j,l))-alpint(i,j,l+1))/ &
-                    (alpint(i,j,l)-alpint(i,j,l+1))
-            else
-              zmid(i,j,l) = spval
-            endif
-          end do
-        end do
-      end do
-!        print *,'in post_gfs,zmid=',maxval(zmid(1:im,jsta:jend,1)), &
-!          minval(zmid(1:im,jsta:jend,1)),maxloc(zmid(1:im,jsta:jend,1)), &
-!          'zint=',maxval(zint(1:im,jsta:jend,2)),minval(zint(1:im,jsta:jend,1)),  &
-!          'pmid=',maxval(pmid(1:im,jsta:jend,1)),minval(pmid(1:im,jsta:jend,1)),  &
-!          'alpint=',maxval(alpint(1:im,jsta:jend,2)),minval(alpint(1:im,jsta:jend,2))
-!        print *,'in post_gfs,alpint=',maxval(alpint(1:im,jsta:jend,1)), &
-!          minval(alpint(1:im,jsta:jend,1))
-
-! surface potential T, and potential T at roughness length
-!$omp parallel do default(none) private(i,j) shared(jsta,jend,ista,iend,spval,lp1,sm,ths,sst,thz0,sice,pint)
-      do j=jsta,jend
-        do i=ista, iend
-          !assign sst
-          if (sm(i,j) /= 0.0 .and. ths(i,j) /= spval) then
-            if (sice(i,j) >= 0.15) then
-              sst(i,j) = 271.4
-            else
-             sst(i,j) = ths(i,j)
-            endif
-          else
-             sst(i,j) = spval
-          endif
-          if (ths(i,j) /= spval) then
-            ths(i,j)  = ths(i,j)* (p1000/pint(i,j,lp1))**capa
-            thz0(i,j) = ths(i,j)
-          else
-            thz0(i,j) = spval
-          endif
-        enddo
-      enddo
-!      print *,'in post_gfs,ths=',maxval(ths(1:im,jsta:jend)), &
-!          minval(ths(1:im,jsta:jend))
-
-! compute cwm for gfdlmp
-!      if(  imp_physics == 11 ) then
-        do l=1,lm
-!$omp parallel do default(none) private(i,j) shared(l,jsta,jend,ista,iend,cwm,qqg,qqs,qqr,qqi,qqw,spval)
-          do j=jsta,jend
-            do i=ista,iend
-              if( qqg(i,j,l) /= spval) then
-                cwm(i,j,l) = qqg(i,j,l)+qqs(i,j,l)+qqr(i,j,l)+qqi(i,j,l)+qqw(i,j,l)
-              else
-                cwm(i,j,l) = spval
-              endif
-            enddo
-          enddo
-        enddo
-!      endif
-
-! estimate 2m pres and convert t2m to theta
-!$omp parallel do default(none) private(i,j) shared(jsta,jend,ista,iend,lm,pshltr,pint,tshltr,spval)
-      do j=jsta,jend
-        do i=ista, iend
-          if( tshltr(i,j) /= spval) then
-            pshltr(I,j) = pint(i,j,lm+1)*EXP(-0.068283/tshltr(i,j))
-            tshltr(i,j) = tshltr(i,j)*(p1000/pshltr(I,J))**CAPA
-          else
-            pshltr(I,J) = spval
-            tshltr(i,j) = spval
-          endif
-        enddo
-      enddo
-!      print *,'in post_gfs,tshltr=',maxval(tshltr(1:im,jsta:jend)), &
-!          minval(tshltr(1:im,jsta:jend))
-
-!htop
-      do j=jsta,jend
-        do i=ista,iend
-          htop(i,j) = spval
-          if(ptop(i,j) < spval)then
-            do l=1,lm
-              if(ptop(i,j) <= pmid(i,j,l))then
-                htop(i,j)=l
-                exit
-              end if
-            end do
-          end if
-        end do
-      end do
-
-! hbot
-      do j=jsta,jend
-        do i=ista,iend
-          hbot(i,j) = spval
-          if(pbot(i,j) < spval)then
-            do l=lm,1,-1
-              if(pbot(i,j) >= pmid(i,j,l)) then
-                hbot(i,j) = l
-                exit
-              end if
-            end do
-          end if
-        end do
-      end do
-
-! generate look up table for lifted parcel calculations
-      thl    = 210.
-      plq    = 70000.
-      pt_tbl = 10000.          ! this is for 100 hPa added by Moorthi
-
-      call table(ptbl,ttbl,pt_tbl,                                     &
-                 rdq,rdth,rdp,rdthe,pl,thl,qs0,sqs,sthe,the0)
-
-      call tableq(ttblq,rdpq,rdtheq,plq,thl,stheq,the0q)
-
-      if(mype == 0)then
-        write(6,*)'  SPL (POSTED PRESSURE LEVELS) BELOW: '
-        write(6,51) (SPL(L),L=1,LSM)
-   50   format(14(F4.1,1X))
-   51   format(8(F8.1,1X))
-      endif
-!
-!$omp parallel do default(none) private(l) shared(lsm,alsl,spl)
-      do l = 1,lsm
-         alsl(l) = log(spl(l))
-      end do
-!
-!      print *,'in gfs_post, end ref_10cm=',maxval(ref_10cm), minval(ref_10cm)
-!!! above is fv3 change
-!
-!more fields need to be computed
-!
-
-
 ! read chemical fields
       if(gocart_on .or. gccpp_on .or. nasa_on) then
   
@@ -3358,7 +3113,7 @@ module post_fv3
           do l=1,lm
             do j=jsta,jend
               do i=ista, iend
-                dust(i,j,l,1) = arrayr43d(i,j,l)
+                dust(i,j,l,1) = max(arrayr43d(i,j,l),0.0)
                 if(abs(arrayr43d(i,j,l)-fillvalue) < small) dust(i,j,l,1) = spval
               enddo
             enddo
@@ -3370,7 +3125,7 @@ module post_fv3
           do l=1,lm
             do j=jsta,jend
               do i=ista, iend
-                dust(i,j,l,2) = arrayr43d(i,j,l)
+                dust(i,j,l,2) = max(arrayr43d(i,j,l),0.0)
                 if(abs(arrayr43d(i,j,l)-fillvalue) < small) dust(i,j,l,2) = spval
               enddo
             enddo
@@ -3382,7 +3137,7 @@ module post_fv3
           do l=1,lm
             do j=jsta,jend
               do i=ista, iend
-                dust(i,j,l,3) = arrayr43d(i,j,l)
+                dust(i,j,l,3) = max(arrayr43d(i,j,l), 0.0)
                 if(abs(arrayr43d(i,j,l)-fillvalue) < small) dust(i,j,l,3) = spval
               enddo
             enddo
@@ -3394,7 +3149,7 @@ module post_fv3
           do l=1,lm
             do j=jsta,jend
               do i=ista, iend
-                dust(i,j,l,4) = arrayr43d(i,j,l)
+                dust(i,j,l,4) = max(arrayr43d(i,j,l), 0.0)
                 if(abs(arrayr43d(i,j,l)-fillvalue) < small) dust(i,j,l,4) = spval
               enddo
             enddo
@@ -3406,7 +3161,7 @@ module post_fv3
           do l=1,lm
             do j=jsta,jend
               do i=ista, iend
-                dust(i,j,l,5) = arrayr43d(i,j,l)
+                dust(i,j,l,5) = max(arrayr43d(i,j,l), 0.0)
                 if(abs(arrayr43d(i,j,l)-fillvalue) < small) dust(i,j,l,5) = spval
               enddo
             enddo
@@ -3774,7 +3529,7 @@ module post_fv3
            sspm(i,j)=(salt(i,j,l,1)+salt(i,j,l,2)+ &
             0.83*salt(i,j,l,3))*RHOMID(i,j,l)  !ug/m3 
 
-         if (gocart_on .or. gccpp_on) then
+           if (gocart_on .or. gccpp_on) then
 !      Surface PM10 concentration
            dusmass(i,j)=(dust(i,j,l,1)+dust(i,j,l,2)+dust(i,j,l,3)+ &
             0.74*dust(i,j,l,4)+salt(i,j,l,1)+salt(i,j,l,2)+salt(i,j,l,3)+ &
@@ -3793,9 +3548,9 @@ module post_fv3
 !      PM25 column
            ducmass25(i,j)=dustcb(i,j)+sscb(i,j)+bccb(i,j)+occb(i,j) &
             +sulfcb(i,j)+pp25cb(i,j)
-         endif !gocart_on or gccpp_on
+           endif !gocart_on or gccpp_on
 
-         if (nasa_on) then
+           if (nasa_on) then
 !      Surface PM10 concentration
            dusmass(i,j)=pp10(i,j,l,1)*RHOMID(i,j,l)  !ug/m3
 !      Surface PM25 concentration       
@@ -3805,13 +3560,257 @@ module post_fv3
            ducmass(i,j)=pp10cb(i,j)
 !      PM25 column
            ducmass25(i,j)=pp25cb(i,j)
-         endif !nasa_on
+           endif !nasa_on
 
           end do
         end do
  
         endif !end gocart_on, nasa_on
 
+!3d fields
+          endif
+
+! end loop ncount_field
+        enddo
+
+        if ( index(trim(wrt_int_state%wrtFB_names(ibdl)),trim(filename_base(1))) > 0)  then 
+          setvar_atmfile = .true.
+        endif
+        if ( index(trim(wrt_int_state%wrtFB_names(ibdl)),trim(filename_base(2))) > 0)   then
+          setvar_sfcfile = .true.
+        endif
+        if(mype==0) print *,'setvar_atmfile=',setvar_atmfile,'setvar_sfcfile=',setvar_sfcfile,'ibdl=',ibdl
+        deallocate(fcstField)
+
+! end file_loop_all
+      enddo file_loop_all
+
+! recompute full layer of zint
+!$omp parallel do default(none) private(i,j) shared(jsta,jend,im,lp1,spval,zint,fis,ista,iend)
+      do j=jsta,jend
+        do i=ista,iend
+          if (fis(i,j) /= spval) then
+            zint(i,j,lp1) = fis(i,j)
+            fis(i,j)      = fis(i,j) * grav
+          else
+            zint(i,j,lp1) = spval
+            fis(i,j)      = spval
+          endif
+        enddo
+      enddo
+
+      do l=lm,1,-1
+!$omp parallel do default(none) private(i,j) shared(l,jsta,jend,im,omga,wh,dpres,zint,spval,ista,iend)
+        do j=jsta,jend
+          do i=ista,iend
+            if(wh(i,j,l) /= spval) then
+              omga(i,j,l) = (-1.) * wh(i,j,l) * dpres(i,j,l)/zint(i,j,l)
+              zint(i,j,l) = zint(i,j,l) + zint(i,j,l+1)
+            else
+              omga(i,j,l) = spval
+              zint(i,j,l) = spval
+            endif
+          enddo
+        enddo
+      enddo
+!      print *,'in post_lam,omga 3d=',maxval(omga(ista:iend,jsta:jend,1)),minval(omga(ista:iend,jsta:jend,1)), &
+!           'lm=',maxval(omga(ista:iend,jsta:jend,lm)),minval(omga(ista:iend,jsta:jend,lm))
+
+! compute pint from top down
+!$omp parallel do default(none) private(i,j) shared(jsta,jend,im,ak5,pint,ista,iend)
+      do j=jsta,jend
+        do i=ista,iend
+          pint(i,j,1) = ak5(1)
+        end do
+      end do
+
+      do l=2,lp1
+!$omp parallel do default(none) private(i,j) shared(l,jsta,jend,im,pint,dpres,spval,ista,iend)
+        do j=jsta,jend
+          do i=ista,iend
+            if(dpres(i,j,l-1) /= spval) then
+              pint(i,j,l) = pint(i,j,l-1) + dpres(i,j,l-1)
+            else
+              pint(i,j,l) = spval
+            endif
+          enddo
+        enddo
+      end do
+
+!compute pmid from averaged two layer pint
+      do l=lm,1,-1
+!$omp parallel do default(none) private(i,j) shared(l,jsta,jend,im,pmid,pint,spval,ista,iend)
+        do j=jsta,jend
+          do i=ista,iend
+            if(pint(i,j,l+1) /= spval) then
+              pmid(i,j,l) = 0.5*(pint(i,j,l)+pint(i,j,l+1))
+            else
+              pmid(i,j,l) = spval
+            endif
+          enddo
+        enddo
+      enddo
+
+!$omp parallel do default(none) private(i,j) shared(jsta,jend,im,spval,pt,pd,pint,ista,iend)
+      do j=jsta,jend
+        do i=ista,iend
+          pd(i,j)     = spval
+          pint(i,j,1) = pt
+        end do
+      end do
+!      print *,'in setvar, pt=',pt,'ak5(lp1)=', ak5(lp1),'ak5(1)=',ak5(1)
+
+! compute alpint
+      do l=lp1,1,-1
+!$omp parallel do default(none) private(i,j) shared(l,jsta,jend,im,alpint,pint,spval,ista,iend)
+        do j=jsta,jend
+          do i=ista,iend
+            if(pint(i,j,l) /= spval) then
+              alpint(i,j,l) = log(pint(i,j,l))
+            else
+              alpint(i,j,l) = spval
+            endif
+          end do
+        end do
+      end do
+
+! compute zmid  
+      do l=lm,1,-1
+!$omp parallel do default(none) private(i,j) shared(l,jsta,jend,im,zmid,zint,pmid,alpint,spval,ista,iend)
+        do j=jsta,jend
+          do i=ista,iend
+            if( zint(i,j,l+1)/=spval .and. zint(i,j,l)/=spval .and. pmid(i,j,l) /= spval) then
+              zmid(i,j,l)=zint(i,j,l+1)+(zint(i,j,l)-zint(i,j,l+1))* &
+                    (log(pmid(i,j,l))-alpint(i,j,l+1))/ &
+                    (alpint(i,j,l)-alpint(i,j,l+1))
+            else
+              zmid(i,j,l) = spval
+            endif
+          end do
+        end do
+      end do
+!        print *,'in post_gfs,zmid=',maxval(zmid(1:im,jsta:jend,1)), &
+!          minval(zmid(1:im,jsta:jend,1)),maxloc(zmid(1:im,jsta:jend,1)), &
+!          'zint=',maxval(zint(1:im,jsta:jend,2)),minval(zint(1:im,jsta:jend,1)),  &
+!          'pmid=',maxval(pmid(1:im,jsta:jend,1)),minval(pmid(1:im,jsta:jend,1)),  &
+!          'alpint=',maxval(alpint(1:im,jsta:jend,2)),minval(alpint(1:im,jsta:jend,2))
+!        print *,'in post_gfs,alpint=',maxval(alpint(1:im,jsta:jend,1)), &
+!          minval(alpint(1:im,jsta:jend,1))
+
+! surface potential T, and potential T at roughness length
+!$omp parallel do default(none) private(i,j) shared(jsta,jend,ista,iend,spval,lp1,sm,ths,sst,thz0,sice,pint)
+      do j=jsta,jend
+        do i=ista, iend
+          !assign sst
+          if (sm(i,j) /= 0.0 .and. ths(i,j) /= spval) then
+            if (sice(i,j) >= 0.15) then
+              sst(i,j) = 271.4
+            else
+             sst(i,j) = ths(i,j)
+            endif
+          else
+             sst(i,j) = spval
+          endif
+          if (ths(i,j) /= spval) then
+            ths(i,j)  = ths(i,j)* (p1000/pint(i,j,lp1))**capa
+            thz0(i,j) = ths(i,j)
+          else
+            thz0(i,j) = spval
+          endif
+        enddo
+      enddo
+!      print *,'in post_gfs,ths=',maxval(ths(1:im,jsta:jend)), &
+!          minval(ths(1:im,jsta:jend))
+
+! compute cwm for gfdlmp
+!      if(  imp_physics == 11 ) then
+        do l=1,lm
+!$omp parallel do default(none) private(i,j) shared(l,jsta,jend,ista,iend,cwm,qqg,qqs,qqr,qqi,qqw,spval)
+          do j=jsta,jend
+            do i=ista,iend
+              if( qqg(i,j,l) /= spval) then
+                cwm(i,j,l) = qqg(i,j,l)+qqs(i,j,l)+qqr(i,j,l)+qqi(i,j,l)+qqw(i,j,l)
+              else
+                cwm(i,j,l) = spval
+              endif
+            enddo
+          enddo
+        enddo
+!      endif
+
+! estimate 2m pres and convert t2m to theta
+!$omp parallel do default(none) private(i,j) shared(jsta,jend,ista,iend,lm,pshltr,pint,tshltr,spval)
+      do j=jsta,jend
+        do i=ista, iend
+          if( tshltr(i,j) /= spval) then
+            pshltr(I,j) = pint(i,j,lm+1)*EXP(-0.068283/tshltr(i,j))
+            tshltr(i,j) = tshltr(i,j)*(p1000/pshltr(I,J))**CAPA
+          else
+            pshltr(I,J) = spval
+            tshltr(i,j) = spval
+          endif
+        enddo
+      enddo
+!      print *,'in post_gfs,tshltr=',maxval(tshltr(1:im,jsta:jend)), &
+!          minval(tshltr(1:im,jsta:jend))
+
+!htop
+      do j=jsta,jend
+        do i=ista,iend
+          htop(i,j) = spval
+          if(ptop(i,j) < spval)then
+            do l=1,lm
+              if(ptop(i,j) <= pmid(i,j,l))then
+                htop(i,j)=l
+                exit
+              end if
+            end do
+          end if
+        end do
+      end do
+
+! hbot
+      do j=jsta,jend
+        do i=ista,iend
+          hbot(i,j) = spval
+          if(pbot(i,j) < spval)then
+            do l=lm,1,-1
+              if(pbot(i,j) >= pmid(i,j,l)) then
+                hbot(i,j) = l
+                exit
+              end if
+            end do
+          end if
+        end do
+      end do
+
+! generate look up table for lifted parcel calculations
+      thl    = 210.
+      plq    = 70000.
+      pt_tbl = 10000.          ! this is for 100 hPa added by Moorthi
+
+      call table(ptbl,ttbl,pt_tbl,                                     &
+                 rdq,rdth,rdp,rdthe,pl,thl,qs0,sqs,sthe,the0)
+
+      call tableq(ttblq,rdpq,rdtheq,plq,thl,stheq,the0q)
+
+      if(mype == 0)then
+        write(6,*)'  SPL (POSTED PRESSURE LEVELS) BELOW: '
+        write(6,51) (SPL(L),L=1,LSM)
+   50   format(14(F4.1,1X))
+   51   format(8(F8.1,1X))
+      endif
+!
+!$omp parallel do default(none) private(l) shared(lsm,alsl,spl)
+      do l = 1,lsm
+         alsl(l) = log(spl(l))
+      end do
+!
+!      print *,'in gfs_post, end ref_10cm=',maxval(ref_10cm), minval(ref_10cm)
+!!! above is fv3 change
+!
+!more fields need to be computed
+!
         end subroutine set_postvars_fv3
 !
 !-----------------------------------------------------------------------
