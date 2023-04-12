@@ -7671,7 +7671,7 @@ module GFS_typedefs
     ! -- burning emission diagnostics for
     ! -- (in order): black carbon,
     ! -- organic carbon, and sulfur dioxide
-    allocate (Diag%abem(IM,7)) ! MIE AOD as 7th
+    allocate (Diag%abem(IM,12)) ! MIE AOD as 7th
     Diag%abem = zero
 
     ! -- initialize column burden diagnostics

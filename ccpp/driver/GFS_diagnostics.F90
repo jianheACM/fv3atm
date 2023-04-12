@@ -4131,7 +4131,7 @@ module GFS_diagnostics
       ExtDiag(idx)%axes = 2
       ExtDiag(idx)%unit = ' '
       ExtDiag(idx)%mod_name = 'gfs_phys'
-     endif !num < 7
+     endif !num < 12
 
       allocate (ExtDiag(idx)%data(nblks))
       do nb = 1,nblks
