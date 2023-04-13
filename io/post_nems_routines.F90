@@ -221,7 +221,7 @@
 !
       use ctlblk_mod, only : komax,fileNameD3D,lsm,lsmp1,spl,spldef,  &
                              lsmdef,ALSL,me,d3d_on,gocart_on,gccpp_on,&
-                             nasa_on, rdaod, hyb_sigp,                &
+                             nasa_on, rdaod, d2d_chem,  hyb_sigp,      &
                              pthresh,novegtype,ivegsrc,icu_physics,   &
                              isf_surface_physics,modelname,submodelname
 !
@@ -239,7 +239,7 @@
       integer l,k
 
       namelist/nampgb/kpo,po,kth,th,kpv,pv,popascal,d3d_on,gocart_on,  &
-                      gccpp_on, nasa_on, rdaod, hyb_sigp
+                      gccpp_on, nasa_on, rdaod, d2d_chem, hyb_sigp
       namelist/model_inputs/modelname,submodelname
 !---------------------------------------------------------------------
 !
@@ -259,6 +259,7 @@
       nasa_on     = .false.
       rdaod       = .false.
       popascal    = .false.
+      d2d_chem    = .false.
 !
       if (me == 0) print *,'post_namelist=',post_namelist
 !jw post namelist is using the same file itag as standalone post
