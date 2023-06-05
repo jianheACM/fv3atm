@@ -5916,210 +5916,210 @@
   dimensions = ()
   type = integer
 [aer_bc_opt]
-  standard_name = gsd_chem_aer_bc_opt
-  long_name = gsd chem aer bc option not used
+  standard_name = catchem_aer_bc_opt
+  long_name = catchem aer bc option not used
   units = index
   dimensions = ()
   type = integer
 [aer_ic_opt]
-  standard_name = gsd_chem_aer_ic_opt
-  long_name = gsd chem aer ic option not used
+  standard_name = catchem_aer_ic_opt
+  long_name = catchem aer ic option not used
   units = index
   dimensions = ()
   type = integer
 [aer_ra_feedback]
-  standard_name = gsd_chem_aer_ra_feedback
-  long_name = gsd chem aer radiation feedback option
+  standard_name = catchem_aer_ra_feedback
+  long_name = catchem aer radiation feedback option
   units = index
   dimensions = ()
   type = integer
 [aerchem_onoff]
-  standard_name = gsd_chem_aerchem_onoff
-  long_name = gsd chem aerchem onoff option not used
+  standard_name = catchem_aerchem_onoff
+  long_name = catchem aerchem onoff option not used
   units = index
   dimensions = ()
   type = integer
 [bio_emiss_opt]
-  standard_name = gsd_chem_bio_emiss_opt
-  long_name = gsd chem bio emiss option not used
+  standard_name = catchem_bio_emiss_opt
+  long_name = catchem bio emiss option not used
   units = index
   dimensions = ()
   type = integer
 [biomass_burn_cplchp]
-  standard_name = gsd_chem_biomass_burn_opt
-  long_name = gsd chem biomass burning option
+  standard_name = catchem_biomass_burn_opt
+  long_name = catchem biomass burning option
   units = index
   dimensions = ()
   type = integer
 [chem_conv_tr]
-  standard_name = gsd_chem_conv_tr
-  long_name = gsd chem convective transport option
+  standard_name = catchem_conv_tr
+  long_name = catchem convective transport option
   units = index
   dimensions = ()
   type = integer
 [chem_in_opt]
-  standard_name = gsd_chem_in_opt
-  long_name = gsd chem coldstart or restart option
+  standard_name = catchem_in_opt
+  long_name = catchem coldstart or restart option
   units = index
   dimensions = ()
   type = integer
 [chem_opt]
-  standard_name = gsd_chem_option
-  long_name = gsd chem option
+  standard_name = catchem_option
+  long_name = catchem option
   units = index
   dimensions = ()
   type = integer
 [chemdt]
-  standard_name = gsd_chem_dt
-  long_name = gsd chem dt
+  standard_name = catchem_dt
+  long_name = catchem dt
   units = index
   dimensions = ()
   type = integer
 [cldchem_onoff]
-  standard_name = gsd_chem_cldchem_onoff
-  long_name = gsd chem cldchem onoff option not used
+  standard_name = catchem_cldchem_onoff
+  long_name = catchem cldchem onoff option not used
   units = index
   dimensions = ()
   type = integer
 [dmsemis_opt]
-  standard_name = gsd_chem_dms_emis_opt
-  long_name = gsd chem dms emission option
+  standard_name = catchem_dms_emis_opt
+  long_name = catchem dms emission option
   units = index
   dimensions = ()
   type = integer
 [dust_opt_cplchp]
-  standard_name = gsd_chem_dust_opt
-  long_name = gsd chem dust chem option
+  standard_name = catchem_dust_opt
+  long_name = catchem dust chem option
   units = index
   dimensions = ()
   type = integer
 [dust_alpha]
-  standard_name = gsd_chem_dust_alpha
+  standard_name = catchem_dust_alpha
   long_name = fengsha dust alpha
   units = none
   dimensions = ()
   type = real
   kind = kind_phys
 [dust_gamma]
-  standard_name = gsd_chem_dust_gamma
+  standard_name = catchem_dust_gamma
   long_name = fengsha dust gamma
   units = none
   dimensions = ()
   type = real
   kind = kind_phys
 [dust_calcdrag]
-  standard_name = gsd_chem_dust_calcdrag
-  long_name = gsd chem dust calcdrag
+  standard_name = catchem_dust_calcdrag
+  long_name = catchem dust calcdrag
   units = index
   dimensions = ()
   type = integer
 [emiss_inpt_opt]
-  standard_name = gsd_chem_emiss_inpt_opt
-  long_name = gsd chem emiss inpt opt
+  standard_name = catchem_emiss_inpt_opt
+  long_name = catchem emiss inpt opt
   units = index
   dimensions = ()
   type = integer
 [emiss_opt]
-  standard_name = gsd_chem_emiss_opt
-  long_name = gsd chem emiss option not used
+  standard_name = catchem_emiss_opt
+  long_name = catchem emiss option not used
   units = index
   dimensions = ()
   type = integer
 [gas_bc_opt]
-  standard_name = gsd_chem_gas_bc_opt
-  long_name = gsd chem gas bc option not used
+  standard_name = catchem_gas_bc_opt
+  long_name = catchem gas bc option not used
   units = index
   dimensions = ()
   type = integer
 [gas_ic_opt]
-  standard_name = gsd_chem_gas_ic_opt
-  long_name = gsd chem gas ic option not used
+  standard_name = catchem_gas_ic_opt
+  long_name = catchem gas ic option not used
   units = index
   dimensions = ()
   type = integer
 [gaschem_onoff]
-  standard_name = gsd_chem_gaschem_onoff
-  long_name = gsd chem gsdchem onoff option not used
+  standard_name = catchem_gaschem_onoff
+  long_name = catchem gaschem onoff option not used
   units = index
   dimensions = ()
   type = integer
 [kemit]
   standard_name = k_emit_dry_dep
-  long_name = gsd chem k emit dimention for dry deoposition
+  long_name = catchem k emit dimention for dry deoposition
   units = index
   dimensions = ()
   type = integer
 [phot_opt]
-  standard_name = gsd_chem_phot_opt
-  long_name = gsd chem phot option not used
+  standard_name = catchem_phot_opt
+  long_name = catchem phot option not used
   units = index
   dimensions = ()
   type = integer
 [photdt]
-  standard_name = gsd_chem_photdt
-  long_name = gsd chem photdt
+  standard_name = catchem_photdt
+  long_name = catchem photdt
   units = index
   dimensions = ()
   type = integer
 [plumerisefire_frq_cplchp]
-  standard_name = gsd_chem_plumerisefire_frq
-  long_name = gsd chem plumerise fire frequency
+  standard_name = catchem_plumerisefire_frq
+  long_name = catchem plumerise fire frequency
   units = index
   dimensions = ()
   type = integer
 [plumerise_flag]
-  standard_name = gsd_chem_plumerise_flag
-  long_name = gsd chem plumerise flag
+  standard_name = catchem_plumerise_flag
+  long_name = catchem plumerise flag
   units = index
   dimensions = ()
   type = integer
 [seas_opt_cplchp]
-  standard_name = gsd_chem_sea_salt_opt
-  long_name = gsd chem sea salt emission option
+  standard_name = catchem_sea_salt_opt
+  long_name = catchem sea salt emission option
   units = index
   dimensions = ()
   type = integer
 [seas_emis_scheme]
-  standard_name = gsd_chem_seas_emis_scheme_sst
-  long_name = gsd chem seas emis scheme sst 
+  standard_name = catchem_seas_emis_scheme_sst
+  long_name = catchem seas emis scheme sst 
   units = index
   dimensions = ()
   type = integer
 [seas_emis_scale]
-  standard_name = gsd_chem_seas_emis_scale
-  long_name = gsd chem seas emis scale
+  standard_name = catchem_seas_emis_scale
+  long_name = catchem seas emis scale
   units = none
   dimensions = (5)
   type = real
   kind = kind_phys
 [vertmix_onoff]
-  standard_name = gsd_chem_vertmix_onoff
-  long_name = gsd chem vertmix onoff option not used
+  standard_name = catchem_vertmix_onoff
+  long_name = catchem vertmix onoff option not used
   units = index
   dimensions = ()
   type = integer
 [aer_ra_frq]
-  standard_name = gsd_chem_aer_ra_frq
-  long_name = gsd chem aer radiation frequency
+  standard_name = catchem_aer_ra_frq
+  long_name = catchem aer radiation frequency
   units = index
   dimensions = ()
   type = integer
 [wetdep_ls_cplchp]
-  standard_name = gsd_chem_wetdep_ls_opt
-  long_name = gsd chem large scale wet deposition option
+  standard_name = catchem_wetdep_ls_opt
+  long_name = catchem large scale wet deposition option
   units = index
   dimensions = ()
   type = integer
 [restart_inname]
-  standard_name = gsd_chem_restart_input_name
-  long_name = gsd chem restart input directory name
+  standard_name = catchem_restart_input_name
+  long_name = catchem restart input directory name
   units = none
   dimensions = ()
   type = character
   kind = len=512
 [restart_outname]
-  standard_name = gsd_chem_restart_output_name
-  long_name = gsd chem restart output directory name
+  standard_name = catchem_restart_output_name
+  long_name = catchem restart output directory name
   units = none
   dimensions = ()
   type = character
