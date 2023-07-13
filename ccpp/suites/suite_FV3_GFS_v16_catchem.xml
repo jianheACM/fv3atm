@@ -88,7 +88,7 @@
       <scheme>GFS_MP_generic_pre</scheme>
       <scheme>gfdl_cloud_microphys</scheme>
       <scheme>GFS_MP_generic_post</scheme>
-      <scheme>catchem_lsdep_wrapper</scheme>
+      <scheme>catchem_wetdep_wrapper</scheme>
       <scheme>catchem_gocart_wrapper</scheme>
       <scheme>catchem_rad_wrapper</scheme>
       <scheme>maximum_hourly_diagnostics</scheme>

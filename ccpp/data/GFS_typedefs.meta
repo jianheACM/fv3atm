@@ -5969,6 +5969,24 @@
   units = index
   dimensions = ()
   type = integer
+[gas_mech_opt]
+  standard_name = catchem_gas_mech_option
+  long_name = catchem gas-phase mechanism option
+  units = index
+  dimensions = ()
+  type = integer
+[aero_scheme_opt]
+  standard_name = catchem_aero_scheme_option
+  long_name = catchem aerosol scheme option
+  units = index
+  dimensions = ()
+  type = integer
+[soa_opt]
+  standard_name = catchem_soa_option
+  long_name = catchem soa scheme option
+  units = index
+  dimensions = ()
+  type = integer
 [chemdt]
   standard_name = catchem_dt
   long_name = catchem dt
