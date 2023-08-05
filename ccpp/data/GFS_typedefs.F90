@@ -1355,6 +1355,57 @@ module GFS_typedefs
     integer              :: ntbcb           !< tracer index for BCPHOBIC
     integer              :: ntocl           !< tracer index for OCPHILIC
     integer              :: ntocb           !< tracer index for OCPHOBIC
+    !JianHe: tracer index for RACM species for now
+    !08/2023: we need a better way to handle tracer index for different
+    !mechanims
+    integer              :: ntno2
+    integer              :: ntno
+    integer              :: nto3
+    integer              :: nthno3
+    integer              :: nth2o2
+    integer              :: ntald
+    integer              :: nthcho
+    integer              :: ntop1
+    integer              :: ntop2
+    integer              :: ntpaa
+    integer              :: ntora1
+    integer              :: ntora2
+    integer              :: ntnh3
+    integer              :: ntn2o5
+    integer              :: ntno3
+    integer              :: ntpan
+    integer              :: nthc3
+    integer              :: nthc5
+    integer              :: nthc8
+    integer              :: nteth
+    integer              :: ntco
+    integer              :: ntete
+    integer              :: ntolt
+    integer              :: ntoli
+    integer              :: nttol
+    integer              :: ntxyl
+    integer              :: ntaco3
+    integer              :: nttpan
+    integer              :: nthono
+    integer              :: nthno4
+    integer              :: ntket
+    integer              :: ntgly
+    integer              :: ntmgly
+    integer              :: ntdcb
+    integer              :: ntonit
+    integer              :: ntcsl
+    integer              :: ntiso
+    integer              :: ntco2
+    integer              :: ntch4
+    integer              :: ntudd
+    integer              :: nthket
+    integer              :: ntapi
+    integer              :: ntlim
+    integer              :: ntdien
+    integer              :: ntmacr
+    integer              :: ntho
+    integer              :: ntho2
+    !
     integer              :: ndchm           !< number of diagnostic chemical tracers (not advected)
     integer              :: ndchs           !< tracer index for first diagnostic chemical tracer
     integer              :: ndche           !< tracer index for last diagnostic chemical tracer
@@ -2850,7 +2901,7 @@ module GFS_typedefs
     ! -- GSDCHEM coupling options
     if (Model%cplchp) then
       !-- chemistry coupling buffer
-      allocate (Coupling%buffer_ebu  (IM,Model%levs+1,1,7))
+      allocate (Coupling%buffer_ebu  (IM,Model%levs+1,1,7))  !JH
       !-- chemistry coupling feedback to radiation
       Coupling%buffer_ebu   = clear_val
     endif
@@ -4760,6 +4811,54 @@ module GFS_typedefs
     Model%ntss4            = get_tracer_index(Model%tracer_names, 'seas4',      Model%me, Model%master, Model%debug)
     Model%ntss5            = get_tracer_index(Model%tracer_names, 'seas5',      Model%me, Model%master, Model%debug)
     Model%ntpp10           = get_tracer_index(Model%tracer_names, 'pp10',       Model%me, Model%master, Model%debug)
+    !jianhe: Add RACM tracers
+    Model%ntno2            = get_tracer_index(Model%tracer_names, 'no2',        Model%me, Model%master, Model%debug)
+    Model%ntno             = get_tracer_index(Model%tracer_names, 'no',         Model%me, Model%master, Model%debug)
+    Model%nto3             = get_tracer_index(Model%tracer_names, 'o3',         Model%me, Model%master, Model%debug)
+    Model%nthno3           = get_tracer_index(Model%tracer_names, 'hno3',       Model%me, Model%master, Model%debug)
+    Model%nth2o2           = get_tracer_index(Model%tracer_names, 'h2o2',       Model%me, Model%master, Model%debug)
+    Model%ntald            = get_tracer_index(Model%tracer_names, 'ald',        Model%me, Model%master, Model%debug)
+    Model%nthcho           = get_tracer_index(Model%tracer_names, 'hcho',       Model%me, Model%master, Model%debug)
+    Model%ntop1            = get_tracer_index(Model%tracer_names, 'op1',        Model%me, Model%master, Model%debug)
+    Model%ntop2            = get_tracer_index(Model%tracer_names, 'op2',        Model%me, Model%master, Model%debug)
+    Model%ntpaa            = get_tracer_index(Model%tracer_names, 'paa',        Model%me, Model%master, Model%debug)
+    Model%ntora1           = get_tracer_index(Model%tracer_names, 'ora1',       Model%me, Model%master, Model%debug)
+    Model%ntora2           = get_tracer_index(Model%tracer_names, 'ora2',       Model%me, Model%master, Model%debug)
+    Model%ntnh3            = get_tracer_index(Model%tracer_names, 'nh3',        Model%me, Model%master, Model%debug)
+    Model%ntn2o5           = get_tracer_index(Model%tracer_names, 'n2o5',       Model%me, Model%master, Model%debug)
+    Model%ntno3            = get_tracer_index(Model%tracer_names, 'no3',        Model%me, Model%master, Model%debug)
+    Model%ntpan            = get_tracer_index(Model%tracer_names, 'pan',        Model%me, Model%master, Model%debug)
+    Model%nthc3            = get_tracer_index(Model%tracer_names, 'hc3',        Model%me, Model%master, Model%debug)
+    Model%nthc5            = get_tracer_index(Model%tracer_names, 'hc5',        Model%me, Model%master, Model%debug)
+    Model%nthc8            = get_tracer_index(Model%tracer_names, 'hc8',        Model%me, Model%master, Model%debug)
+    Model%nteth            = get_tracer_index(Model%tracer_names, 'eth',        Model%me, Model%master, Model%debug)
+    Model%ntco             = get_tracer_index(Model%tracer_names, 'co',         Model%me, Model%master, Model%debug)
+    Model%ntete            = get_tracer_index(Model%tracer_names, 'ete',        Model%me, Model%master, Model%debug)
+    Model%ntolt            = get_tracer_index(Model%tracer_names, 'olt',        Model%me, Model%master, Model%debug)
+    Model%ntoli            = get_tracer_index(Model%tracer_names, 'oli',        Model%me, Model%master, Model%debug)
+    Model%nttol            = get_tracer_index(Model%tracer_names, 'tol',        Model%me, Model%master, Model%debug)
+    Model%ntxyl            = get_tracer_index(Model%tracer_names, 'xyl',        Model%me, Model%master, Model%debug)
+    Model%ntaco3           = get_tracer_index(Model%tracer_names, 'aco3',       Model%me, Model%master, Model%debug)
+    Model%nttpan           = get_tracer_index(Model%tracer_names, 'tpan',       Model%me, Model%master, Model%debug)
+    Model%nthono           = get_tracer_index(Model%tracer_names, 'hono',       Model%me, Model%master, Model%debug)
+    Model%nthno4           = get_tracer_index(Model%tracer_names, 'hno4',       Model%me, Model%master, Model%debug)
+    Model%ntket            = get_tracer_index(Model%tracer_names, 'ket',        Model%me, Model%master, Model%debug)
+    Model%ntgly            = get_tracer_index(Model%tracer_names, 'gly',        Model%me, Model%master, Model%debug)
+    Model%ntmgly           = get_tracer_index(Model%tracer_names, 'mgly',       Model%me, Model%master, Model%debug)
+    Model%ntdcb            = get_tracer_index(Model%tracer_names, 'dcb',        Model%me, Model%master, Model%debug)
+    Model%ntonit           = get_tracer_index(Model%tracer_names, 'onit',       Model%me, Model%master, Model%debug)
+    Model%ntcsl            = get_tracer_index(Model%tracer_names, 'csl',        Model%me, Model%master, Model%debug)
+    Model%ntiso            = get_tracer_index(Model%tracer_names, 'iso',        Model%me, Model%master, Model%debug)
+    Model%ntco2            = get_tracer_index(Model%tracer_names, 'co2',        Model%me, Model%master, Model%debug)
+    Model%ntch4            = get_tracer_index(Model%tracer_names, 'ch4',        Model%me, Model%master, Model%debug)
+    Model%ntudd            = get_tracer_index(Model%tracer_names, 'udd',        Model%me, Model%master, Model%debug)
+    Model%nthket           = get_tracer_index(Model%tracer_names, 'hket',       Model%me, Model%master, Model%debug)
+    Model%ntapi            = get_tracer_index(Model%tracer_names, 'api',        Model%me, Model%master, Model%debug)
+    Model%ntlim            = get_tracer_index(Model%tracer_names, 'lim',        Model%me, Model%master, Model%debug)
+    Model%ntdien           = get_tracer_index(Model%tracer_names, 'dien',       Model%me, Model%master, Model%debug)
+    Model%ntmacr           = get_tracer_index(Model%tracer_names, 'macr',       Model%me, Model%master, Model%debug)
+    Model%ntho             = get_tracer_index(Model%tracer_names, 'ho',         Model%me, Model%master, Model%debug)
+    Model%ntho2            = get_tracer_index(Model%tracer_names, 'ho2',        Model%me, Model%master, Model%debug)
     endif ! cplchp tracers
 
     !JianHe: placeholder, in the future, we need think about how to
@@ -6433,6 +6532,55 @@ module GFS_typedefs
       print *, ' ntss4             : ', Model%ntss4
       print *, ' ntss5             : ', Model%ntss5
       print *, ' ntpp10            : ', Model%ntpp10
+      !jianhe:
+      print *, ' no2               : ', Model%ntno2
+      print *, ' no                : ', Model%ntno
+      print *, ' o3                : ', Model%nto3
+      print *, ' hno3              : ', Model%nthno3
+      print *, ' h2o2              : ', Model%nth2o2
+      print *, ' ald               : ', Model%ntald
+      print *, ' hcho              : ', Model%nthcho
+      print *, ' op1               : ', Model%ntop1
+      print *, ' op2               : ', Model%ntop2
+      print *, ' paa               : ', Model%ntpaa
+      print *, ' ora1              : ', Model%ntora1
+      print *, ' ora2              : ', Model%ntora2
+      print *, ' nh3               : ', Model%ntnh3
+      print *, ' n2o5              : ', Model%ntn2o5
+      print *, ' no3               : ', Model%ntno3
+      print *, ' pan               : ', Model%ntpan
+      print *, ' hc3               : ', Model%nthc3
+      print *, ' hc5               : ', Model%nthc5
+      print *, ' hc8               : ', Model%nthc8
+      print *, ' eth               : ', Model%nteth
+      print *, ' co                : ', Model%ntco
+      print *, ' ete               : ', Model%ntete
+      print *, ' olt               : ', Model%ntolt
+      print *, ' oli               : ', Model%ntoli
+      print *, ' tol               : ', Model%nttol
+      print *, ' xyl               : ', Model%ntxyl
+      print *, ' aco3              : ', Model%ntaco3
+      print *, ' tpan              : ', Model%nttpan
+      print *, ' hono              : ', Model%nthono
+      print *, ' hno4              : ', Model%nthno4
+      print *, ' ket               : ', Model%ntket
+      print *, ' gly               : ', Model%ntgly
+      print *, ' mgly              : ', Model%ntmgly
+      print *, ' dcb               : ', Model%ntdcb
+      print *, ' onit              : ', Model%ntonit
+      print *, ' csl               : ', Model%ntcsl
+      print *, ' iso               : ', Model%ntiso
+      print *, ' co2               : ', Model%ntco2
+      print *, ' ch4               : ', Model%ntch4
+      print *, ' udd               : ', Model%ntudd
+      print *, ' hket              : ', Model%nthket
+      print *, ' api               : ', Model%ntapi
+      print *, ' lim               : ', Model%ntlim
+      print *, ' dien              : ', Model%ntdien
+      print *, ' macr              : ', Model%ntmacr
+      print *, ' ho                : ', Model%ntho
+      print *, ' ho2               : ', Model%ntho2
+      !
       print *, ' aer_bc_opt        : ', Model%aer_bc_opt
       print *, ' aer_ic_opt        : ', Model%aer_ic_opt
       print *, ' aer_ra_feeback    : ', Model%aer_ra_feedback

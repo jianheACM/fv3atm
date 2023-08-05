@@ -242,6 +242,7 @@ SCHEME_FILES = [
     '../../CATChem/drivers/ccpp/catchem_plume_wrapper.F90',
     '../../CATChem/drivers/ccpp/catchem_dmsemis_wrapper.F90',
     '../../CATChem/drivers/ccpp/catchem_gocart_wrapper.F90',
+    '../../CATChem/drivers/ccpp/catchem_gocartracm_wrapper.F90',
     '../../CATChem/drivers/ccpp/catchem_rad_wrapper.F90',
     '../../CATChem/drivers/ccpp/catchem_drydep_wrapper.F90',
     '../../CATChem/drivers/ccpp/catchem_wetdep_wrapper.F90',
