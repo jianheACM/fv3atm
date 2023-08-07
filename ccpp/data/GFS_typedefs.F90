@@ -1,5 +1,6 @@
 !! Revision History:
 !! 06/2023, Add addtional options for CATChem, Jian.He@noaa.gov
+!! 08/2023, hardwired for RACM, Jian.He@noaa.gov
 
 module GFS_typedefs
 
@@ -2231,7 +2232,7 @@ module GFS_typedefs
     allocate (Sfcprop%smoke_GBBEPx(IM,24,3))
     allocate (Sfcprop%emi_in   (IM,1))
 
-    allocate (Sfcprop%emi_in_cplchp   (IM,10))
+    allocate (Sfcprop%emi_in_cplchp   (IM,28)) !JianHe: include RACM
     allocate (Sfcprop%dust_in  (IM,5))
     allocate (Sfcprop%emi2_in  (IM,Model%levs,3))
     allocate (Sfcprop%fire_MODIS  (IM,13))
@@ -2901,7 +2902,8 @@ module GFS_typedefs
     ! -- GSDCHEM coupling options
     if (Model%cplchp) then
       !-- chemistry coupling buffer
-      allocate (Coupling%buffer_ebu  (IM,Model%levs+1,1,7))  !JH
+      !JianHe: we set for now, may include more tracers later
+      allocate (Coupling%buffer_ebu  (IM,Model%levs+1,1,7)) 
       !-- chemistry coupling feedback to radiation
       Coupling%buffer_ebu   = clear_val
     endif

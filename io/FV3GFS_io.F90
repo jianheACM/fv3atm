@@ -1,3 +1,5 @@
+!JianHe: 08/2023, modify emission input for RACM, jian.he@noaa.gov
+
 module FV3GFS_io_mod
 
 !-----------------------------------------------------------------------
@@ -553,7 +555,7 @@ module FV3GFS_io_mod
     else if (Model%cplchp) then
     !-- global fire
       nvar_dust   = 5
-      nvar_emi    = 10
+      nvar_emi    = 28 !JianHe: hardwired for now
       nvar_emi2   = 3
       nvar_gbbepx = 5
     else
@@ -771,6 +773,26 @@ module FV3GFS_io_mod
       emi_name(8)  = 'ero1'
       emi_name(9)  = 'ero2'
       emi_name(10) = 'ero3'
+      !JianHe: For RACM
+      emi_name(11)  = 'e_iso'   
+      emi_name(12)  = 'e_no'
+      emi_name(13)  = 'e_no2'
+      emi_name(14)  = 'e_co'
+      emi_name(15)  = 'e_eth'
+      emi_name(16)  = 'e_hc3'
+      emi_name(17)  = 'e_hc5'
+      emi_name(18)  = 'e_hc8'
+      emi_name(19)  = 'e_xyl'
+      emi_name(20)  = 'e_olt'
+      emi_name(21)  = 'e_oli'
+      emi_name(22)  = 'e_tol'
+      emi_name(23)  = 'e_csl'
+      emi_name(24)  = 'e_hcho'
+      emi_name(25)  = 'e_ald'
+      emi_name(26)  = 'e_ket'
+      emi_name(27)  = 'e_ora2'
+      emi_name(28)  = 'e_nh3'
+
       !--- register axis
       call register_axis( emi_restart, "lon", 'X' )
       call register_axis( emi_restart, "lat", 'Y' )
@@ -802,6 +824,25 @@ module FV3GFS_io_mod
         Sfcprop(nb)%emi_in_cplchp(ix,8)  = emi_var(i,j,8)
         Sfcprop(nb)%emi_in_cplchp(ix,9)  = emi_var(i,j,9)
         Sfcprop(nb)%emi_in_cplchp(ix,10) = emi_var(i,j,10)
+        !JianHe:
+        Sfcprop(nb)%emi_in_cplchp(ix,11)  = emi_var(i,j,11)
+        Sfcprop(nb)%emi_in_cplchp(ix,12)  = emi_var(i,j,12)
+        Sfcprop(nb)%emi_in_cplchp(ix,13)  = emi_var(i,j,13)
+        Sfcprop(nb)%emi_in_cplchp(ix,14)  = emi_var(i,j,14)
+        Sfcprop(nb)%emi_in_cplchp(ix,15)  = emi_var(i,j,15)
+        Sfcprop(nb)%emi_in_cplchp(ix,16)  = emi_var(i,j,16)
+        Sfcprop(nb)%emi_in_cplchp(ix,17)  = emi_var(i,j,17)
+        Sfcprop(nb)%emi_in_cplchp(ix,18)  = emi_var(i,j,18)
+        Sfcprop(nb)%emi_in_cplchp(ix,19)  = emi_var(i,j,19)
+        Sfcprop(nb)%emi_in_cplchp(ix,20)  = emi_var(i,j,20)
+        Sfcprop(nb)%emi_in_cplchp(ix,21)  = emi_var(i,j,21)
+        Sfcprop(nb)%emi_in_cplchp(ix,22)  = emi_var(i,j,22)
+        Sfcprop(nb)%emi_in_cplchp(ix,23)  = emi_var(i,j,23)
+        Sfcprop(nb)%emi_in_cplchp(ix,24)  = emi_var(i,j,24)
+        Sfcprop(nb)%emi_in_cplchp(ix,25)  = emi_var(i,j,25)
+        Sfcprop(nb)%emi_in_cplchp(ix,26)  = emi_var(i,j,26)
+        Sfcprop(nb)%emi_in_cplchp(ix,27)  = emi_var(i,j,27)
+        Sfcprop(nb)%emi_in_cplchp(ix,28)  = emi_var(i,j,28)
       enddo
     enddo
 
