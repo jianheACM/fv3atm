@@ -1,3 +1,6 @@
+!! Revision History:
+!! 06/2023, Add addtional options for CATChem, Jian.He@noaa.gov
+
 module GFS_typedefs
 
    use machine,                  only: kind_phys, kind_dbl_prec, kind_sngl_prec
@@ -1408,7 +1411,8 @@ module GFS_typedefs
     logical              :: pre_rad         !< flag for testing purpose
     logical              :: print_diff_pgr  !< print average change in pgr every timestep (does not need debug flag)
 
-!-- chem nml variables for FV3/CCPP-Chem
+!-- chem nml variables for CATChem
+    !JianHe: need clean up
     integer              :: aer_bc_opt
     integer              :: aer_ic_opt
     integer              :: aer_ra_feedback
@@ -1424,7 +1428,7 @@ module GFS_typedefs
     integer              :: dust_opt_cplchp
     real(kind=kind_phys) :: dust_alpha
     real(kind=kind_phys) :: dust_gamma
-   integer              :: dust_calcdrag
+    integer              :: dust_calcdrag
     integer              :: emiss_inpt_opt
     integer              :: emiss_opt
     integer              :: gas_bc_opt
@@ -1443,6 +1447,12 @@ module GFS_typedefs
     integer              :: wetdep_ls_cplchp
     character(len=512)   :: restart_inname  ! chemistry restart input directory
     character(len=512)   :: restart_outname ! chemistry restart output directory
+
+    ! JianHe: instead of using chem_opt, we specify options 
+    ! for gas-phase mechanism and aerosol scheme
+    integer              :: gas_mech_opt     ! gas-phase mechanism
+    integer              :: aero_scheme_opt  ! aerosol model
+    integer              :: soa_opt          ! soa scheme
 
 !--- variables modified at each time step
     integer              :: ipt             !< index for diagnostic printout point
@@ -3590,6 +3600,14 @@ module GFS_typedefs
     character(len=512)   :: restart_inname = ''
     character(len=512)   :: restart_outname = ''
 
+    !JianHe: place holder, we need have more explicit options here
+    integer              :: gas_mech_opt = 1      ! 1, Simple chemistry from prescribed fields,
+                                                  ! often coupled with
+                                                  ! GSL-GOCART; More gas-phase
+                                                  ! mechanisms in the future
+    integer              :: aero_scheme_opt = 1   ! 1, Default option from GSL-GOCART 
+    integer              :: soa_opt = 0           ! 0, No SOA formation
+
 !-- chem nml variables for RRFS-Smoke
     integer :: seas_opt = 2
     integer :: dust_opt = 5
@@ -3756,6 +3774,8 @@ module GFS_typedefs
                                seas_opt_cplchp, seas_emis_scheme, seas_emis_scale,          &
                                vertmix_onoff, aer_ra_frq, wetdep_ls_cplchp,                 &
                                restart_inname, restart_outname,                             &  
+                          !---JianHe: CATChem namelist
+                               gas_mech_opt, aero_scheme_opt, soa_opt,                      &
                           !--- RRFS smoke namelist
                                seas_opt, dust_opt, biomass_burn_opt, drydep_opt,            &
                                wetdep_ls_opt, smoke_forecast, aero_ind_fdb, aero_dir_fdb,   &
@@ -4413,6 +4433,10 @@ module GFS_typedefs
     Model%wetdep_ls_cplchp  = wetdep_ls_cplchp
     Model%restart_inname    = restart_inname
     Model%restart_outname   = restart_outname
+    !JianHe
+    Model%gas_mech_opt      = gas_mech_opt
+    Model%aero_scheme_opt   = aero_scheme_opt
+    Model%soa_opt           = soa_opt
 
     ! To ensure that these values match what's in the physics,
     ! array sizes are compared during model init in GFS_phys_time_vary_init()
@@ -4737,6 +4761,10 @@ module GFS_typedefs
     Model%ntss5            = get_tracer_index(Model%tracer_names, 'seas5',      Model%me, Model%master, Model%debug)
     Model%ntpp10           = get_tracer_index(Model%tracer_names, 'pp10',       Model%me, Model%master, Model%debug)
     endif ! cplchp tracers
+
+    !JianHe: placeholder, in the future, we need think about how to
+    !automatically include these tracers here. Should read in a tracer list file
+    !depending on gas_mech_opt and aero_scheme_opt
 
 !--- setup aerosol scavenging factors
     call Model%init_scavenging(fscav_aero)
@@ -5842,6 +5870,7 @@ module GFS_typedefs
     if (Model%ntchm > 0) Model%ntche = Model%ntchs + Model%ntchm - 1
     if (Model%ndchm > 0) Model%ndche = Model%ndchs + Model%ndchm - 1
 
+    !JianHe: be cautious with starting/ending tracer
     if (Model%cplchp) then
       Model%ntchs = get_tracer_index(Model%tracer_names, 'so2', Model%me, Model%master, Model%debug)
       Model%ntche = get_tracer_index(Model%tracer_names, 'pp10', Model%me, Model%master, Model%debug)
