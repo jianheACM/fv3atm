@@ -9,8 +9,8 @@
 [submodule "ccpp/physics"]
   path = ccpp/physics
   url = https://github.com/zhanglikate/ccpp-physics
-  branch = gsl-updates
+  branch = p8-ufs-ccpp-chem
 [submodule "upp"]
   path = upp
   url = https://github.com/zhanglikate/UPP
-  branch = gsl-updates
+  branch = p8-ufs-ccpp-chem
