@@ -63,7 +63,7 @@ module FV3GFS_io_mod
   character(len=32)  :: fn_dust12m= 'dust12m_data.nc'
   character(len=32)  :: fn_emi    = 'emi_data.nc'
   character(len=32)  :: fn_gbbepx = 'SMOKE_GBBEPx_data.nc'
-  character(len=32)  :: fn_dust   = 'dust_data.nc'
+  character(len=32)  :: fn_dust   = 'dust_data_g12m.nc'
   character(len=32)  :: fn_emi2   = 'emi2_data.nc'
   character(len=32)  :: fn_gbbepxv3 = 'FIRE_GBBEPx_data.nc'
   !--- GFDL FMS netcdf restart data types defined in fms2_io
@@ -77,8 +77,8 @@ module FV3GFS_io_mod
   real(kind=kind_phys), allocatable, target, dimension(:,:,:)   :: oro_ls_var, oro_ss_var
   real(kind=kind_phys), allocatable, target, dimension(:,:,:,:) :: sfc_var3, phy_var3
   character(len=32),    allocatable,         dimension(:)       :: dust12m_name, dust_name, emi_name, emi2_name, gbbepx_name
-  real(kind=kind_phys), allocatable, target, dimension(:,:,:,:) :: dust12m_var,gbbepx_var
-  real(kind=kind_phys), allocatable, target, dimension(:,:,:)   :: dust_var, emi_var, gbbepx_varv3
+  real(kind=kind_phys), allocatable, target, dimension(:,:,:,:) :: dust12m_var,gbbepx_var,dust_var
+  real(kind=kind_phys), allocatable, target, dimension(:,:,:)   :: emi_var, gbbepx_varv3
   real(kind=kind_phys), allocatable, target, dimension(:,:,:,:) :: emi2_var
   !--- Noah MP restart containers
   real(kind=kind_phys), allocatable, target, dimension(:,:,:,:) :: sfc_var3sn,sfc_var3eq,sfc_var3zn
@@ -533,12 +533,14 @@ module FV3GFS_io_mod
     real(kind=kind_phys), pointer, dimension(:,:,:) :: var3_p2 => NULL()
     real(kind=kind_phys), pointer, dimension(:,:,:) :: var3_p3 => NULL()
     !--- local variables for sncovr calculation
-    integer :: vegtyp
+    integer :: vegtyp,igb,ie
     logical :: mand
     real(kind=kind_phys) :: rsnow, tem, tem1
     !--- directory of the input files
     character(5)  :: indir='INPUT'
     character(37) :: infile
+    character(40) :: idd
+    character(2)  :: i_trim
     !--- fms2_io file open logic
     logical :: amiopen
     logical :: is_lsoil
@@ -712,7 +714,7 @@ module FV3GFS_io_mod
     if (.not. allocated(dust_name)) then
     !--- allocate the various containers needed for fengsha dust data
       allocate(dust_name(nvar_dust))
-      allocate(dust_var(nx,ny,nvar_dust))
+      allocate(dust_var(nx,ny,12,nvar_dust))
 
       dust_name(1)  = 'clay'
       dust_name(2)  = 'rdrag'
@@ -723,29 +725,33 @@ module FV3GFS_io_mod
       !--- register axis
       call register_axis(dust_restart, 'lon', 'X')
       call register_axis(dust_restart, 'lat', 'Y')
+      call register_axis(dust_restart, 'time', 12)
       !--- register the 2D fields
       do num = 1,nvar_dust
-        var2_p => dust_var(:,:,num)
-        call register_restart_field(dust_restart, dust_name(num), var2_p, dimensions=(/'lat ', 'lon '/))
+        var3_p2 => dust_var(:,:,:,num)
+        call register_restart_field(dust_restart, dust_name(num), var3_p2, dimensions=(/'time', 'lat ', 'lon '/),&
+                                  &is_optional=.not.mand)
       enddo
-      nullify(var2_p)
+      nullify(var3_p)
     endif
 
     !--- read new GSL created dust restart/data
-    call mpp_error(NOTE,'reading dust information from INPUT/dust_data.tile*.nc')
+    call mpp_error(NOTE,'reading dust information from INPUT/dust_data_g12m.tile*.nc')
     call read_restart(dust_restart)
     call close_file(dust_restart)
 
     do nb = 1, Atm_block%nblks
-      !--- 2D variables
+      !--- 3D variables
       do ix = 1, Atm_block%blksz(nb)
         i = Atm_block%index(nb)%ii(ix) - isc + 1
         j = Atm_block%index(nb)%jj(ix) - jsc + 1
-        Sfcprop(nb)%dust_in(ix,1)  = dust_var(i,j,1)
-        Sfcprop(nb)%dust_in(ix,2)  = dust_var(i,j,2)
-        Sfcprop(nb)%dust_in(ix,3)  = dust_var(i,j,3)
-        Sfcprop(nb)%dust_in(ix,4)  = dust_var(i,j,4)
-        Sfcprop(nb)%dust_in(ix,5)  = dust_var(i,j,5)
+        do k = 1, 12
+         Sfcprop(nb)%dust_in(ix,k,1)  = dust_var(i,j,k,1)
+         Sfcprop(nb)%dust_in(ix,k,2)  = dust_var(i,j,k,2)
+         Sfcprop(nb)%dust_in(ix,k,3)  = dust_var(i,j,k,3)
+         Sfcprop(nb)%dust_in(ix,k,4)  = dust_var(i,j,k,4)
+         Sfcprop(nb)%dust_in(ix,k,5)  = dust_var(i,j,k,5)
+        enddo
       enddo
     enddo
 
@@ -855,8 +861,17 @@ module FV3GFS_io_mod
 
     deallocate(emi2_name,emi2_var)
 
+      igb=Model%emiss_opt
+   do ie=1, igb
+      write(i_trim, '(I0)') ie
+      idd = trim('d' // trim(i_trim) // '_' // trim(fn_gbbepxv3))
     !--- open file
+    if (igb == 1) then
     infile=trim(indir)//'/'//trim(fn_gbbepxv3)
+    else
+    infile=trim(indir)//'/'//trim(idd)
+    endif
+    !print *, 'GBfile', infile
     amiopen=open_file(gbbepx_restart, trim(infile), 'read', domain=fv_domain, is_restart=.true., dont_add_res_to_filename=.true.)
     if (.not.amiopen) call mpp_error( FATAL, 'Error with opening file'//trim(infile) )
 
@@ -874,11 +889,14 @@ module FV3GFS_io_mod
       call register_axis( gbbepx_restart, "lon", 'X' )
       call register_axis( gbbepx_restart, "lat", 'Y' )
       !--- register the 2D fields
+      
       do num = 1,nvar_gbbepx
         var2_p => gbbepx_varv3(:,:,num)
         call register_restart_field(gbbepx_restart, gbbepx_name(num), var2_p, dimensions=(/'lat ', 'lon '/))
       enddo
       nullify(var2_p)
+      
+
     endif
 
     !--- read new GSL created gbbepx restart/data
@@ -892,15 +910,16 @@ module FV3GFS_io_mod
         i = Atm_block%index(nb)%ii(ix) - isc + 1
         j = Atm_block%index(nb)%jj(ix) - jsc + 1
         !--- assign hprime(1:10) and hprime(15:24) with new oro stat data
-        Sfcprop(nb)%fire_GBBEPx(ix,1)  = gbbepx_varv3(i,j,1)
-        Sfcprop(nb)%fire_GBBEPx(ix,2)  = gbbepx_varv3(i,j,2)
-        Sfcprop(nb)%fire_GBBEPx(ix,3)  = gbbepx_varv3(i,j,3)
-        Sfcprop(nb)%fire_GBBEPx(ix,4)  = gbbepx_varv3(i,j,4)
-        Sfcprop(nb)%fire_GBBEPx(ix,5)  = gbbepx_varv3(i,j,5)
+        Sfcprop(nb)%fire_GBBEPx(ix,1,ie)  = gbbepx_varv3(i,j,1)
+        Sfcprop(nb)%fire_GBBEPx(ix,2,ie)  = gbbepx_varv3(i,j,2)
+        Sfcprop(nb)%fire_GBBEPx(ix,3,ie)  = gbbepx_varv3(i,j,3)
+        Sfcprop(nb)%fire_GBBEPx(ix,4,ie)  = gbbepx_varv3(i,j,4)
+        Sfcprop(nb)%fire_GBBEPx(ix,5,ie)  = gbbepx_varv3(i,j,5)
       enddo
     enddo
 
     deallocate(gbbepx_name, gbbepx_varv3)
+    enddo !igb
     endif !if (Model%cplchp) then
 
 
