@@ -545,7 +545,7 @@ module post_fv3
                              sfcvxi, t10m, t10avg, psfcavg, akhsavg, akmsavg,  &
                              albedo, tg, prate_max, pwat, snow_acm, snow_bkt,  &
                              acgraup, graup_bucket, acfrain, frzrn_bucket,     &
-                             ltg1_max, ltg2_max, ltg3_max, ebb, hwp,           &
+                             ltg1_max, ltg2_max, ltg3_max, hwp,                &
                              aod550,du_aod550,ss_aod550,su_aod550,oc_aod550,   &
                              bc_aod550,maod,                                   &
                              dustpm10, dustcb, bccb, occb, sulfcb, sscb,       &
@@ -1003,17 +1003,6 @@ module post_fv3
                   hail_maxhailcast(i,j)=arrayr42d(i,j)
                   if(abs(arrayr42d(i,j)-fillValue) < small) hail_maxhailcast(i,j)=spval
                 enddo        
-              enddo
-            endif
-
-            ! biomass burning emissions
-            if(trim(fieldname)=='ebb_smoke_hr') then
-              !$omp parallel do default(none) private(i,j) shared(jsta,jend,ista,iend,ebb,arrayr42d,fillValue,spval)
-              do j=jsta,jend
-                do i=ista, iend
-                  ebb(i,j)=arrayr42d(i,j)
-                  if(abs(arrayr42d(i,j)-fillValue) < small) ebb(i,j)=spval
-                enddo
               enddo
             endif
 
