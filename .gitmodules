@@ -1,6 +1,6 @@
 [submodule "atmos_cubed_sphere"]
   path = atmos_cubed_sphere
-  url = https://github.com/zhanglikate/GFDL_atmos_cubed_sphere
+  url = git@github.com:jianheACM/GFDL_atmos_cubed_sphere.git
   branch = catchem
 [submodule "ccpp/framework"]
   path = ccpp/framework
@@ -8,8 +8,8 @@
   branch = main
 [submodule "ccpp/physics"]
   path = ccpp/physics
-  url = https://github.com/zhanglikate/ccpp-physics
-  branch = thom-cat-apr
+  url = git@github.com:jianheACM/ccpp-physics.git
+  branch = catchem_Apr
 [submodule "upp"]
   path = upp
   url = https://github.com/zhanglikate/UPP
