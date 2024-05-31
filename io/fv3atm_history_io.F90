@@ -201,6 +201,8 @@ CONTAINS
     hist%lat = xlat
 
     do idx = 1,DIAG_SIZE
+      if(mpp_pe() == mpp_root_pe()) print *, 'in fv3atm_diag_register, Diag%name= ',idx,trim(Diag(idx)%name)
+
       if (trim(Diag(idx)%name) == '') exit
       hist%tot_diag_idx = idx
     enddo

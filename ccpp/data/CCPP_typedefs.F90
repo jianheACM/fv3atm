@@ -972,6 +972,8 @@ contains
 
     Interstitial%nscav = Model%ntrac - Model%ncnd + 2
 
+    if (Model%me == Model%master)  write(0,*) 'cplchp setting: nscav,ncnd =', Interstitial%nscav,Model%ncnd
+
     if (Interstitial%nvdiff == Model%ntrac) then
       Interstitial%ntcwx = Model%ntcw
       Interstitial%ntiwx = Model%ntiw
@@ -1032,6 +1034,8 @@ contains
       endif
       if (Interstitial%trans_aero) Interstitial%nvdiff = Interstitial%nvdiff + Model%ntchm
       if (Model%ntke > 0) Interstitial%nvdiff = Interstitial%nvdiff + 1    !  adding tke to the list
+
+      if (Model%me == Model%master)  write(0,*) 'cplchp setting: nvdiff,ntrac =', Interstitial%nvdiff, Model%ntrac
     endif
 
     if (Model%ntke > 0) Interstitial%ntkev = Interstitial%nvdiff
@@ -1076,10 +1080,17 @@ contains
 !           if (ntlnc == n .or. ntinc == n .or. ntrnc == n .or. ntsnc == n .or.&
 !               ntrw  == n .or. ntsw  == n .or. ntgl  == n)                    &
                   Interstitial%otspt(tracers+1,1) = .false.
+          !JianHe: we do not include diag chem tracer for transport
+          if (Model%ntche > 0 .and. Model%ntche < n) Interstitial%otspt(tracers+1,:) = .false.
           if (Interstitial%trans_aero .and. Model%ntchs == n) Interstitial%itc = tracers
         endif
       enddo
       Interstitial%tracers_total = tracers - 2
+
+      if (Model%me == Model%master)  write(0,*) 'cplchp setting: otspt= ', Interstitial%otspt
+      if (Model%me == Model%master)  write(0,*) 'cplchp setting: otsptflag= ', Interstitial%otsptflag
+      if (Model%me == Model%master)  write(0,*) 'cplchp setting: nn= ', Interstitial%nn
+
     endif   ! end if_ras or cfscnv or samf
     if (.not. Model%satmedmf .and. .not. Model%trans_trac .and. &
         .not. Model%ras      .and. .not. Model%do_shoc) then
@@ -1088,6 +1099,9 @@ contains
        Interstitial%nsamftrac = Interstitial%tracers_total
     endif
     Interstitial%ncstrac = Interstitial%tracers_total + 3
+
+    if (Model%me == Model%master)  write(0,*) 'cplchp setting: nsamftrac= ', Interstitial%nsamftrac
+    if (Model%me == Model%master)  write(0,*) 'cplchp setting: ncstrac= ', Interstitial%ncstrac
 
   end subroutine gfs_interstitial_setup_tracers
 

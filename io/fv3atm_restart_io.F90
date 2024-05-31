@@ -88,6 +88,15 @@ module fv3atm_restart_io_mod
   !>@ Filename template for monthly GB fire daa for CATChem. FMS may add grid and tile information to the name
   character(len=32), parameter  :: fn_gbbepx = 'FIRE_GBBEPx_data.nc'
 
+  !>@ Filename template for chemical IC for CATChem with AM4 opt. FMS may add grid and tile information to the name
+  character(len=32), parameter  :: fn_chemic = 'chemic_data.nc' 
+
+  !>@ Filename template for dfdage for CATChem with AM4 opt. FMS may add grid and tile information to the name
+  character(len=32), parameter  :: fn_dfdage = 'dfdage3_data.nc'
+
+  !>@ Filename template for depvel for CATChem with AM4 opt. FMS may add grid and tile information to the name
+  character(len=32), parameter  :: fn_depvel = 'depvel_data.nc'
+
   real(kind_phys), parameter:: zero = 0.0, one = 1.0
 
   !>@ Instance of phy_data_type for quilt output of physics diagnostic data
@@ -538,13 +547,14 @@ contains
     type(rrfs_sd_state_type) :: rrfs_sd_state
     type(rrfs_sd_emissions_type) :: rrfs_sd_emis
     type(catchem_emissions_type) :: catchem_emis
+    type(catchem_am4_type)       :: catchem_am4
     type(Oro_scale_io_data_type) :: oro_ss
     type(Oro_scale_io_data_type) :: oro_ls
     type(Sfc_io_data_type) :: sfc
     type(Oro_io_data_type) :: oro
 
     type(FmsNetcdfDomainFile_t) :: Oro_restart, Sfc_restart, dust12m_restart,dust_restart, emi_restart, rrfssd_restart,&
-                                   emi2_restart, gbbepx_restart
+                                   emi2_restart, gbbepx_restart, chemic_restart, dfdage_restart, depvel_restart
     type(FmsNetcdfDomainFile_t) :: Oro_ls_restart, Oro_ss_restart
 
     !--- OROGRAPHY FILE
@@ -625,11 +635,11 @@ contains
 
     if_catchem: if(Model%cplchp) then  ! for CATChem
 
-    !--- Dust input FILE
-    !--- open file
-    infile=trim(indir)//'/'//trim(fn_dust)
-    amiopen=open_file(dust_restart, trim(infile), 'read', domain=fv_domain, is_restart=.true., dont_add_res_to_filename=.true.)
-    if (.not.amiopen) call mpp_error( FATAL, 'Error with opening file'//trim(infile) )
+      !--- Dust input FILE
+      !--- open file
+      infile=trim(indir)//'/'//trim(fn_dust)
+      amiopen=open_file(dust_restart, trim(infile), 'read', domain=fv_domain, is_restart=.true., dont_add_res_to_filename=.true.)
+      if (.not.amiopen) call mpp_error( FATAL, 'Error with opening file'//trim(infile) )
 
       !--- Register axes and variables, allocate memory:
       call catchem_emis%register_dust(dust_restart, Atm_block)
@@ -650,7 +660,13 @@ contains
       if (.not.amiopen) call mpp_error( FATAL, 'Error with opening file'//trim(infile) )
 
       ! Register axes and variables, allocate memory
-      call catchem_emis%register_emi(emi_restart, Atm_block)
+      if (Model%gaschem_opt == 0) then  ! gsl-gocart aerosol
+        call catchem_emis%register_emi(emi_restart, Atm_block)
+      elseif (Model%gaschem_opt == 1 .or. Model%do_am4chem) then ! gfdl-am4 gas + aerosol  
+        call catchem_am4%register_emi(emi_restart, Atm_block)
+      else
+        call mpp_error(FATAL,'Error with reading emissions for gaschem_opt!')
+      endif
 
       !--- read anthropogenic emi restart/data
       call mpp_error(NOTE,'reading emi information from INPUT/emi_data.tile*.nc')
@@ -658,7 +674,13 @@ contains
       call close_file(emi_restart)
 
       !--- Copy to Sfcprop and free temporary arrays:
-      call catchem_emis%copy_emi(Sfcprop, Atm_block)
+      if (Model%gaschem_opt == 0) then  ! gsl-gocart aerosol
+        call catchem_emis%copy_emi(Sfcprop, Atm_block)
+      elseif (Model%gaschem_opt == 1 .or. Model%do_am4chem) then ! gfdl-am4 gas + aerosol
+        call catchem_am4%copy_emi(Sfcprop, Atm_block)
+      else
+        call mpp_error(FATAL,'Error with copying emis data to Sfcprop!')
+      endif
 
       !----------------------------------------------
 
@@ -697,7 +719,13 @@ contains
       if (.not.amiopen) call mpp_error( FATAL, 'Error with opening file'//trim(infile) )
 
       ! Register axes and variables, allocate memory
-      call catchem_emis%register_gbbepx(gbbepx_restart, Atm_block)
+      if (Model%gaschem_opt == 0) then  ! gsl-gocart aerosol
+        call catchem_emis%register_gbbepx(gbbepx_restart, Atm_block)
+      elseif (Model%gaschem_opt == 1 .or. Model%do_am4chem) then ! gfdl-am4 gas + aerosol
+        call catchem_am4%register_gbbepx(gbbepx_restart, Atm_block)
+      else
+        call mpp_error(FATAL,'Error with reading gbbepx for gaschem_opt!')
+      endif
 
       !--- read new GSL created gbbepx restart/data
       call mpp_error(NOTE,'reading gbbepx information from INPUT/FIRE_GBBEPx_data.nc')
@@ -705,8 +733,74 @@ contains
       call close_file(gbbepx_restart)
 
       !--- Copy to Sfcprop and free temporary arrays:
-      call catchem_emis%copy_gbbepx(Sfcprop, Atm_block,ie)
+      if (Model%gaschem_opt == 0) then  ! gsl-gocart aerosol
+        call catchem_emis%copy_gbbepx(Sfcprop, Atm_block,ie)
+      elseif (Model%gaschem_opt == 1 .or. Model%do_am4chem) then ! gfdl-am4 gas + aerosol
+        call catchem_am4%copy_gbbepx(Sfcprop, Atm_block,ie)
+      else
+        call mpp_error(FATAL,'Error with copying gbbepx data to Sfcprop!')
+      endif
       enddo
+
+      !----------------------------------------------
+
+      if (Model%gaschem_opt == 1 .or. Model%do_am4chem) then  ! for gfdl-am4 gas
+        !--- open chemical initial condition file
+        infile=trim(indir)//'/'//trim(fn_chemic)
+        amiopen=open_file(chemic_restart, trim(infile), 'read', domain=fv_domain, is_restart=.true., dont_add_res_to_filename=.true.)
+        if (.not.amiopen) call mpp_error( FATAL, 'Error with opening file'//trim(infile) )
+
+        ! Register axes and variables, allocate memory
+        call catchem_am4%register_chemic(chemic_restart, Atm_block)
+
+        !--- read chemic restart/data
+        call mpp_error(NOTE,'reading chemical initial condition from INPUT/chemic_data.tile*.nc')
+        call read_restart(chemic_restart)
+        call close_file(chemic_restart)
+
+        !--- Copy to Sfcprop and free temporary arrays:
+        call catchem_am4%copy_chemic(Sfcprop, Atm_block)
+
+        !----------------------------------------------
+
+        !--- open dfdage file
+        infile=trim(indir)//'/'//trim(fn_dfdage)
+        amiopen=open_file(dfdage_restart, trim(infile), 'read', domain=fv_domain, is_restart=.true., dont_add_res_to_filename=.true.)
+        if (.not.amiopen) call mpp_error( FATAL, 'Error with opening file'//trim(infile) )
+
+        ! Register axes and variables, allocate memory
+        call catchem_am4%register_dfdage(dfdage_restart, Atm_block)
+
+        !--- read dfdage restart/data
+        call mpp_error(NOTE,'reading dfdage from INPUT/dfdage_data.tile*.nc')
+        call read_restart(dfdage_restart)
+        call close_file(dfdage_restart)
+
+        !--- Copy to Sfcprop and free temporary arrays:
+        call catchem_am4%copy_dfdage(Sfcprop, Atm_block)
+
+        !----------------------------------------------
+
+        !--- open depvel file
+        infile=trim(indir)//'/'//trim(fn_depvel)
+        amiopen=open_file(depvel_restart, trim(infile), 'read', domain=fv_domain, is_restart=.true., dont_add_res_to_filename=.true.)
+        if (.not.amiopen) call mpp_error( FATAL, 'Error with opening file'//trim(infile) )
+
+        ! Register axes and variables, allocate memory
+        call catchem_am4%register_depvel(depvel_restart, Atm_block)
+
+        !--- read depvel restart/data
+        call mpp_error(NOTE,'reading depvel from INPUT/depvel_data.tile*.nc')
+        call read_restart(depvel_restart)
+        call close_file(depvel_restart)
+
+        !--- Copy to Sfcprop and free temporary arrays:
+        call catchem_am4%copy_depvel(Sfcprop, Atm_block)
+
+        !----------------------------------------------
+
+      endif
+
     endif if_catchem  ! CATChem
 
 

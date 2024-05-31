@@ -951,7 +951,7 @@
   standard_name = anthropogenic_background_input_cplchp
   long_name = anthropogenic background input cplchp
   units = various
-  dimensions = (horizontal_loop_extent,10)
+  dimensions = (horizontal_loop_extent,number_of_tracers_in_anthro_emis_input)
   type = real
   kind = kind_phys
   active = (flag_for_chemistry_package_coupling)
@@ -963,11 +963,35 @@
   type = real
   kind = kind_phys
   active = (flag_for_chemistry_package_coupling)
+[chemic_in]
+  standard_name = chemical_initial_conditions_3d_input
+  long_name = chemical initial conditions 3d input
+  units = various
+  dimensions = (horizontal_loop_extent,49,number_of_tracers_in_chemical_ic_input)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[dfdage_in]
+  standard_name = cfc_destruction_rate_3d_input
+  long_name = cfc destruction rate 3d input
+  units = various
+  dimensions = (horizontal_loop_extent,72,8)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[depvel_in]
+  standard_name = dry_deposition_velocity_2d_input
+  long_name = dry deposition velocity 2d input
+  units = m s-1
+  dimensions = (horizontal_loop_extent,22)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
 [fire_GBBEPx]
   standard_name = emission_fire_GBBEPx
   long_name = emission fire GBBEPx
   units = various
-  dimensions = (horizontal_loop_extent,5,35)
+  dimensions = (horizontal_loop_extent,number_of_tracers_in_gbbepx_input,35)
   type = real
   kind = kind_phys
   active = (flag_for_chemistry_package_coupling)
@@ -3211,7 +3235,7 @@
   standard_name = chem_buffer_ebu
   long_name = chemistry buffer of ebu
   units = various
-  dimensions = (horizontal_loop_extent,vertical_interface_dimension,1,7)
+  dimensions = (horizontal_loop_extent,vertical_interface_dimension,1,number_of_tracers_in_gbbepx_input_plus_two)
   type = real
   kind = kind_phys
   active = (flag_for_chemistry_package_coupling)
@@ -6857,6 +6881,150 @@
   units = index
   dimensions = ()
   type = integer
+[ntno2]
+  standard_name = index_for_no2
+  long_name = index for no2
+  units = index
+  dimensions = ()
+  type = integer
+[ntno]
+  standard_name = index_for_no
+  long_name = index for no
+  units = index
+  dimensions = ()
+  type = integer
+[ntnh3]
+  standard_name = index_for_nh3
+  long_name = index for nh3
+  units = index
+  dimensions = ()
+  type = integer
+[ntch2o]
+  standard_name = index_for_ch2o
+  long_name = index for ch2o
+  units = index
+  dimensions = ()
+  type = integer
+[ntco]
+  standard_name = index_for_co
+  long_name = index for co
+  units = index
+  dimensions = ()
+  type = integer
+[ntch4]
+  standard_name = index_for_ch4
+  long_name = index for ch4
+  units = index
+  dimensions = ()
+  type = integer
+[ntc2h4]
+  standard_name = index_for_c2h4
+  long_name = index for c2h4
+  units = index
+  dimensions = ()
+  type = integer
+[ntc2h6]
+  standard_name = index_for_c2h6
+  long_name = index for c2h6
+  units = index
+  dimensions = ()
+  type = integer
+[ntc3h6]
+  standard_name = index_for_c3h6
+  long_name = index for c3h6
+  units = index
+  dimensions = ()
+  type = integer
+[ntc3h8]
+  standard_name = index_for_c3h8
+  long_name = index for c3h8
+  units = index
+  dimensions = ()
+  type = integer
+[ntc4h10]
+  standard_name = index_for_c4h10
+  long_name = index for c4h10
+  units = index
+  dimensions = ()
+  type = integer
+[ntisop]
+  standard_name = index_for_isop
+  long_name = index for isop
+  units = index
+  dimensions = ()
+  type = integer
+[ntc10h16]
+  standard_name = index_for_c10h16
+  long_name = index for c10h16
+  units = index
+  dimensions = ()
+  type = integer
+[ntch3oh]
+  standard_name = index_for_ch3oh
+  long_name = index for ch3oh
+  units = index
+  dimensions = ()
+  type = integer
+[ntc2h5oh]
+  standard_name = index_for_c2h5oh
+  long_name = index for c2h5oh
+  units = index
+  dimensions = ()
+  type = integer
+[ntch3coch3]
+  standard_name = index_for_ch3coch3
+  long_name = index for ch3coch3
+  units = index
+  dimensions = ()
+  type = integer
+[nth2]
+  standard_name = index_for_h2
+  long_name = index for h2
+  units = index
+  dimensions = ()
+  type = integer
+[nte90]
+  standard_name = index_for_e90
+  long_name = index for e90
+  units = index
+  dimensions = ()
+  type = integer
+[ntage]
+  standard_name = index_for_age
+  long_name = index for age
+  units = index
+  dimensions = ()
+  type = integer
+[ntoh]
+  standard_name = index_for_oh
+  long_name = index for oh
+  units = index
+  dimensions = ()
+  type = integer
+[ntaoanh]
+  standard_name = index_for_aoanh
+  long_name = index for aoanh
+  units = index
+  dimensions = ()
+  type = integer
+[ntextinct]
+  standard_name = index_for_extinction
+  long_name = index for extinction
+  units = index
+  dimensions = ()
+  type = integer
+[ntsoa]
+  standard_name = index_for_soa
+  long_name = index for soa
+  units = index
+  dimensions = ()
+  type = integer
+[ntso4]
+  standard_name = index_for_so4
+  long_name = index for so4
+  units = index
+  dimensions = ()
+  type = integer
 [ndchm]
   standard_name = number_of_diagnostic_chemical_tracers
   long_name = number of diagnostic chemical tracers
@@ -6881,6 +7049,30 @@
   units = flag
   dimensions = (number_of_chemical_tracers)
   type = logical
+[nvar_emi]
+  standard_name = number_of_tracers_in_anthro_emis_input
+  long_name = number of tracers in anthropogenic emission input
+  units = count
+  dimensions = ()
+  type = integer
+[nvar_gbbepx]
+  standard_name = number_of_tracers_in_gbbepx_input
+  long_name = number of tracers in GBBEPx emission input
+  units = count
+  dimensions = ()
+  type = integer
+[nvar_gbbepxp2]
+  standard_name = number_of_tracers_in_gbbepx_input_plus_two
+  long_name = number of tracers in GBBEPx emission input plus two
+  units = count
+  dimensions = ()
+  type = integer
+[nvar_chemic]
+  standard_name = number_of_tracers_in_chemical_ic_input
+  long_name = number of tracers in chemical initial condition input
+  units = count
+  dimensions = ()
+  type = integer
 [fscav]
   standard_name = chemical_tracer_scavenging_fractions
   long_name = array of aerosol scavenging coefficients
@@ -6888,6 +7080,13 @@
   dimensions = (number_of_chemical_tracers)
   type = real
   kind = kind_phys
+[tracer_names]
+  standard_name = atmos_mod_tracer_names
+  long_name = array of atmos model tracer names
+  units = none
+  dimensions = (number_of_tracers)
+  type = character
+  kind = len=32
 [ntot2d]
   standard_name = number_of_variables_in_xy_dimensioned_restart_array
   long_name = total number of variables for phyf2d
@@ -6984,12 +7183,74 @@
   units = index
   dimensions = ()
   type = integer
+[read_chemic]
+  standard_name = flag_for_reading_chemical_ic
+  long_name = flag for reading chemical ic
+  units = flag
+  dimensions = ()
+  type = logical
+[do_am4chem]
+  standard_name = flag_for_am4_chemistry
+  long_name = flag for am4 chemistry
+  units = flag
+  dimensions = ()
+  type = logical
 [chem_opt]
   standard_name = catchem_option
   long_name = catchem option
   units = index
   dimensions = ()
   type = integer
+[gaschem_opt]
+  standard_name = catchem_gaschem_option
+  long_name = catchem gas-phase chemical mechanism option
+  units = index
+  dimensions = ()
+  type = integer
+[aerochem_opt]
+  standard_name = catchem_aerochem_option
+  long_name = catchem aerosol scheme option
+  units = index
+  dimensions = ()
+  type = integer
+[gas_drydep_opt]
+  standard_name = catchem_gas_drydep_option
+  long_name = catchem gas dry deposition scheme
+  units = index
+  dimensions = ()
+  type = integer
+[gas_wetdep_opt]
+  standard_name = catchem_gas_wetdep_option
+  long_name = catchem gas large scale wet deposition scheme
+  units = index
+  dimensions = ()
+  type = integer
+[soa_opt]
+  standard_name = catchem_soa_option
+  long_name = catchem soa scheme option
+  units = index
+  dimensions = ()
+  type = integer
+[isoprene_SOA_yield]
+  standard_name = catchem_isoprene_SOA_yield
+  long_name = catchem isoprene soa yield
+  units = index
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[terpene_SOA_yield]
+  standard_name = catchem_terpene_SOA_yield
+  long_name = catchem terpene soa yield
+  units = index
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[use_interactive_BVOC_emis]
+  standard_name = catchem_use_interactive_BVOC_emis
+  long_name = catchem use interactive BVOC emis for soa formation
+  units = index
+  dimensions = ()
+  type = logical
 [chemdt]
   standard_name = catchem_dt
   long_name = catchem dt
@@ -7008,6 +7269,32 @@
   units = index
   dimensions = ()
   type = integer
+[lnox_opt]
+  standard_name = catchem_lnox_emis_opt
+  long_name = catchem lightning nox emission option
+  units = index
+  dimensions = ()
+  type = integer
+[lght_no_prd_factor]
+  standard_name = catchem_lnox_prod_factor
+  long_name = catchem lightning no production factor
+  units = index
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[min_land_frac_lght]
+  standard_name = catchem_min_land_frac_lght
+  long_name = catchem minimum land fraction for flash frequency calculation
+  units = index
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[normalize_lght_no_prd_area]
+  standard_name = catchem_normalize_lght_no_prd_area
+  long_name = catchem normalize lightning NOx production by grid cell area
+  units = index
+  dimensions = ()
+  type = logical
 [dust_opt_cplchp]
   standard_name = catchem_dust_opt
   long_name = catchem dust chem option
@@ -9853,6 +10140,102 @@
   dimensions = (horizontal_loop_extent,6)
   type = real
   kind = kind_phys
+[bioem]
+  standard_name = instantaneous_biogenic_emissions
+  long_name = instantaneous biogenic emissions for dms, isop, c10h16, and lighting nox
+  units = mol km-2 hr-1
+  dimensions = (horizontal_loop_extent,4)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[bmbem]
+  standard_name = instantaneous_biomass_burning_emissions
+  long_name = instantaneous biomass burning emissions for co, ch4, nh3, and terp
+  units = mol km-2 hr-1
+  dimensions = (horizontal_loop_extent,4)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[antem]
+  standard_name = instantaneous_anthropogenic_emissions
+  long_name = instantaneous anthropogenic emissions for co, ch4, nh3, and so2
+  units = mol km-2 hr-1
+  dimensions = (horizontal_loop_extent,4)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[jval]
+  standard_name = instantaneous_photolysis_rates
+  long_name = instantaneous photolysis rates for o2, o1d, no2
+  units = s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension,3)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[ddep]
+  standard_name = instantaneous_dry_deposition_from_AM4
+  long_name = instantaneous dry deposition for o3, nh3, and so4
+  units = kg m-2 s-1
+  dimensions = (horizontal_loop_extent,3)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[wdep]
+  standard_name = instantaneous_wet_deposition_from_AM4
+  long_name = instantaneous wet deposition for so2, nh3 and so4
+  units = kg m-2 s-1
+  dimensions = (horizontal_loop_extent,3)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[ox_prod]
+  standard_name = o3_chemical_production
+  long_name = o3 chemical production
+  units = mol mol-1 s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[ox_loss]
+  standard_name = o3_chemical_loss
+  long_name = o3 chemical loss
+  units = mol mol-1 s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[lch4_prod]
+  standard_name = ch4_chemical_loss_due_to_oh
+  long_name = ch4 chemical loss due to oh
+  units = mol mol s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[ch4_loss]
+  standard_name = ch4_chemical_loss
+  long_name = ch4 chemical loss due to oh, o1d, cl
+  units = mol mol s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[oh_prod]
+  standard_name = oh_chemical_production
+  long_name = oh chemical production
+  units = mol mol-1 s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[oh_loss]
+  standard_name = oh_chemical_loss
+  long_name = oh chemical loss
+  units = mol mol-1 s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
 [lwp_ex]
   standard_name = liq_water_path_from_microphysics
   long_name = total liquid water path from explicit microphysics

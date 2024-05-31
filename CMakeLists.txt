@@ -140,6 +140,10 @@ if(MULTI_GASES)
   list(APPEND _fv3atm_defs_private MULTI_GASES)
 endif()
 
+if(AM4_CHEM)
+  list(APPEND _fv3atm_defs_private AM4_CHEM)
+endif()
+
 target_link_libraries(fv3atm PUBLIC fv3
                                     fv3ccpp
                                     stochastic_physics

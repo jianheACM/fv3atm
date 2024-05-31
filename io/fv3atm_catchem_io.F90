@@ -25,7 +25,13 @@ module fv3atm_catchem_io
        catchem_emissions_register_dust, catchem_emissions_copy_dust, &
        catchem_emissions_register_emi, catchem_emissions_copy_emi, &
        catchem_emissions_register_emi2, catchem_emissions_copy_emi2, &
-       catchem_emissions_register_gbbepx, catchem_emissions_copy_gbbepx
+       catchem_emissions_register_gbbepx, catchem_emissions_copy_gbbepx, &
+       catchem_am4_type, catchem_am4_final, &
+       catchem_am4_register_emi, catchem_am4_copy_emi, &
+       catchem_am4_register_gbbepx, catchem_am4_copy_gbbepx, &
+       catchem_am4_register_chemic, catchem_am4_copy_chemic, &
+       catchem_am4_register_dfdage, catchem_am4_copy_dfdage, &
+       catchem_am4_register_depvel, catchem_am4_copy_depvel
 
   !>\defgroup fv3atm_catchem_io module
   !> @{
@@ -92,6 +98,48 @@ module fv3atm_catchem_io
 
     final :: catchem_emissions_final
   end type catchem_emissions_type
+
+  ! --------------------------------------------------------------------
+
+  !>@ Temporary data storage for reading AM4 inputdata
+  type catchem_am4_type
+    integer, private :: nvar_emi = 30
+    integer, private :: nvar_gbbepx = 21
+    integer, private :: nvar_chemic = 26
+    integer, private :: nvar_dfdage = 8
+    integer, private :: nvar_depvel = 22
+
+    character(len=32), pointer, dimension(:), private :: emi_name => null()
+    character(len=32), pointer, dimension(:), private :: gbbepx_name => null()
+    character(len=32), pointer, dimension(:), private :: chemic_name => null()
+    character(len=32), pointer, dimension(:), private :: dfdage_name => null()
+    character(len=32), pointer, dimension(:), private :: depvel_name => null()
+
+    real(kind=kind_phys), pointer, dimension(:,:,:), private :: emi_var => null()
+    real(kind=kind_phys), pointer, dimension(:,:,:), private :: gbbepx_var => null()
+    real(kind=kind_phys), pointer, dimension(:,:,:), private :: depvel_var => null()
+    real(kind=kind_phys), pointer, dimension(:,:,:,:), private :: chemic_var => null()
+    real(kind=kind_phys), pointer, dimension(:,:,:,:), private :: dfdage_var => null()
+
+  contains
+
+    procedure, public :: register_emi => catchem_am4_register_emi
+    procedure, public :: copy_emi => catchem_am4_copy_emi
+
+    procedure, public :: register_gbbepx => catchem_am4_register_gbbepx
+    procedure, public :: copy_gbbepx => catchem_am4_copy_gbbepx
+
+    procedure, public :: register_chemic => catchem_am4_register_chemic
+    procedure, public :: copy_chemic => catchem_am4_copy_chemic
+
+    procedure, public :: register_dfdage => catchem_am4_register_dfdage
+    procedure, public :: copy_dfdage => catchem_am4_copy_dfdage
+
+    procedure, public :: register_depvel => catchem_am4_register_depvel
+    procedure, public :: copy_depvel => catchem_am4_copy_depvel
+
+    final :: catchem_am4_final
+  end type catchem_am4_type
 
   ! --------------------------------------------------------------------
 
@@ -706,6 +754,502 @@ contains
     ! Undefine this to avoid cluttering the cpp scope:
 #undef IF_ASSOC_DEALLOC_NULL
   end subroutine catchem_emissions_final
+  ! --------------------------------------------------------------------
+
+  !>@ Allocates temporary arrays and registers variables for reading am4 emissions.
+  subroutine catchem_am4_register_emi(data, restart, Atm_block)
+    implicit none
+    class(catchem_am4_type) :: data
+    type(FmsNetcdfDomainFile_t) :: restart
+    type(block_control_type), intent(in) :: Atm_block
+
+    real(kind=kind_phys), pointer, dimension(:,:) :: var2_p => NULL()
+    integer :: num, nx, ny
+
+    if(associated(data%emi_name)) then
+      deallocate(data%emi_name)
+      nullify(data%emi_name)
+    endif
+
+    if(associated(data%emi_var)) then
+      deallocate(data%emi_var)
+      nullify(data%emi_var)
+    endif
+
+    call get_nx_ny_from_atm(Atm_block, nx, ny)
+    allocate(data%emi_name(data%nvar_emi))
+    allocate(data%emi_var(nx,ny,data%nvar_emi))
+
+    data%emi_name(1)  = 'e_bc'
+    data%emi_name(2)  = 'e_oc'
+    data%emi_name(3)  = 'e_sulf'
+    data%emi_name(4)  = 'e_pm_25'
+    data%emi_name(5)  = 'e_so2'
+    data%emi_name(6)  = 'e_pm_10'
+    data%emi_name(7)  = 'dm0'
+    data%emi_name(8)  = 'ero1'
+    data%emi_name(9)  = 'ero2'
+    data%emi_name(10) = 'ero3'
+    data%emi_name(11)  = 'e_no'
+    data%emi_name(12)  = 'e_no2'
+    data%emi_name(13)  = 'e_nh3'
+    data%emi_name(14)  = 'e_co'
+    data%emi_name(15)  = 'e_ch4'
+    data%emi_name(16)  = 'e_ch2o'
+    data%emi_name(17)  = 'e_c2h4'
+    data%emi_name(18)  = 'e_c2h6'
+    data%emi_name(19)  = 'e_c3h6'
+    data%emi_name(20)  = 'e_c3h8'
+    data%emi_name(21)  = 'e_c4h10'
+    data%emi_name(22)  = 'e_isop'
+    data%emi_name(23)  = 'e_c10h16'
+    data%emi_name(24)  = 'e_ch3oh'
+    data%emi_name(25)  = 'e_c2h5oh'
+    data%emi_name(26)  = 'e_ch3coch3'
+    data%emi_name(27)  = 'e_h2'
+    data%emi_name(28)  = 'e_e90'
+    data%emi_name(29)  = 'ebio_isop'
+    data%emi_name(30)  = 'ebio_c10h16'
+
+    !--- register axis
+    call register_axis( restart, "lon", 'X' )
+    call register_axis( restart, "lat", 'Y' )
+    !--- register the 2D fields
+      do num = 1,data%nvar_emi
+        var2_p => data%emi_var(:,:,num)
+        call register_restart_field(restart, data%emi_name(num), var2_p, dimensions=(/'lat ', 'lon '/))
+      enddo
+
+  end subroutine catchem_am4_register_emi
+
+  ! --------------------------------------------------------------------
+
+  !>@ Called after register_emi() to copy data from internal arrays to the model grid and deallocate arrays
+  subroutine catchem_am4_copy_emi(data, Sfcprop, Atm_block)
+    implicit none
+    type(GFS_sfcprop_type),    intent(inout) :: Sfcprop(:)
+    class(catchem_am4_type) :: data
+    type(block_control_type), intent(in) :: Atm_block
+
+    integer :: num, nb, i, j, ix
+
+    if(.not.associated(data%emi_name) .or. .not.associated(data%emi_var)) then
+      write(0,*) 'ERROR: Called copy_emi before register_emi'
+      return
+    endif
+
+    do num=1,data%nvar_emi
+      !$omp parallel do default(shared) private(i, j, nb, ix)
+      do nb = 1, Atm_block%nblks
+        !--- 2D variables
+        do ix = 1, Atm_block%blksz(nb)
+          i = Atm_block%index(nb)%ii(ix) - Atm_block%isc + 1
+          j = Atm_block%index(nb)%jj(ix) - Atm_block%jsc + 1
+          Sfcprop(nb)%emi_in_cplchp(ix,num)  = data%emi_var(i,j,num)
+        enddo
+      enddo
+    enddo
+
+    deallocate(data%emi_name)
+    nullify(data%emi_name)
+    deallocate(data%emi_var)
+    nullify(data%emi_var)
+  end subroutine catchem_am4_copy_emi
+
+  ! --------------------------------------------------------------------
+
+  !>@ Allocates temporary arrays and registers variables for reading the fire data file.
+  subroutine catchem_am4_register_gbbepx(data, restart, Atm_block)
+    implicit none
+    class(catchem_am4_type) :: data
+    type(FmsNetcdfDomainFile_t) :: restart
+    type(block_control_type), intent(in) :: Atm_block
+
+    real(kind=kind_phys), pointer, dimension(:,:) :: var2_p => NULL()
+    integer :: num, nx, ny
+
+
+    if(associated(data%gbbepx_name)) then
+      deallocate(data%gbbepx_name)
+      nullify(data%gbbepx_name)
+    endif
+
+    if(associated(data%gbbepx_var)) then
+      deallocate(data%gbbepx_var)
+      nullify(data%gbbepx_var)
+    endif
+
+
+    !--- allocate the various containers needed for rrfssd fire data
+    call get_nx_ny_from_atm(Atm_block, nx, ny)
+    allocate(data%gbbepx_name(data%nvar_gbbepx))
+    allocate(data%gbbepx_var(nx,ny,data%nvar_gbbepx))
+    data%gbbepx_name(1)  = 'ebu_bc'
+    data%gbbepx_name(2)  = 'ebu_oc'
+    data%gbbepx_name(3)  = 'ebu_pm_25'
+    data%gbbepx_name(4)  = 'ebu_so2'
+    data%gbbepx_name(5)  = 'ebu_frp'
+    data%gbbepx_name(6)  = 'ebu_ch3coch3'
+    data%gbbepx_name(7)  = 'ebu_c2h4'
+    data%gbbepx_name(8)  = 'ebu_c2h5oh'
+    data%gbbepx_name(9)  = 'ebu_c2h6'
+    data%gbbepx_name(10) = 'ebu_c3h6'
+    data%gbbepx_name(11) = 'ebu_c3h8'
+    data%gbbepx_name(12) = 'ebu_c4h10'
+    data%gbbepx_name(13) = 'ebu_ch2o'
+    data%gbbepx_name(14) = 'ebu_ch3oh'
+    data%gbbepx_name(15) = 'ebu_ch4'
+    data%gbbepx_name(16) = 'ebu_co'
+    data%gbbepx_name(17) = 'ebu_h2'
+    data%gbbepx_name(18) = 'ebu_isop'
+    data%gbbepx_name(19) = 'ebu_nh3'
+    data%gbbepx_name(20) = 'ebu_no'
+    data%gbbepx_name(21) = 'ebu_c10h16'
+
+    !--- register axis
+    call register_axis(restart, 'lon', 'X')
+    call register_axis(restart, 'lat', 'Y')
+    !--- register the 2D fields
+
+
+    do num = 1,data%nvar_gbbepx
+      var2_p => data%gbbepx_var(:,:,num)
+      call register_restart_field(restart, data%gbbepx_name(num), var2_p, dimensions=(/'lat ', 'lon '/))
+    enddo
+
+  end subroutine catchem_am4_register_gbbepx
+
+  ! --------------------------------------------------------------------
+
+  !>@ Called after register_fire() to copy data from internal arrays to the model grid and deallocate arrays
+  subroutine catchem_am4_copy_gbbepx(data, Sfcprop, Atm_block,ie)
+    implicit none
+    class(catchem_am4_type) :: data
+    type(GFS_sfcprop_type),    intent(inout) :: Sfcprop(:)
+    type(block_control_type), intent(in) :: Atm_block
+    integer, intent (in) :: ie
+
+    integer :: num, nb, ix, k, i, j
+
+    do num=1,data%nvar_gbbepx
+      !$omp parallel do default(shared) private(i, j, nb, ix, k)
+      do nb = 1, Atm_block%nblks
+        do ix = 1, Atm_block%blksz(nb)
+          i = Atm_block%index(nb)%ii(ix) - Atm_block%isc + 1
+          j = Atm_block%index(nb)%jj(ix) - Atm_block%jsc + 1
+          Sfcprop(nb)%fire_GBBEPx(ix,num,ie) = data%gbbepx_var(i,j,num)
+        enddo
+      enddo
+    enddo
+  end subroutine catchem_am4_copy_gbbepx
+
+  ! --------------------------------------------------------------------
+  !>@ Allocates temporary arrays and registers variables for reading the GOCART background file.
+  subroutine catchem_am4_register_chemic(data, restart, Atm_block)
+    implicit none
+    class(catchem_am4_type) :: data
+    type(FmsNetcdfDomainFile_t) :: restart
+    type(block_control_type), intent(in) :: Atm_block
+
+    real(kind=kind_phys), pointer, dimension(:,:,:) :: var3_p2 => NULL()
+    integer :: num, nx, ny
+
+    if(associated(data%chemic_name)) then
+      deallocate(data%chemic_name)
+      nullify(data%chemic_name)
+    endif
+
+    if(associated(data%chemic_var)) then
+      deallocate(data%chemic_var)
+      nullify(data%chemic_var)
+    endif
+
+    call get_nx_ny_from_atm(Atm_block, nx, ny)
+    allocate(data%chemic_name(data%nvar_chemic))
+    allocate(data%chemic_var(nx,ny,49,data%nvar_chemic))  ! AM4 level
+
+    data%chemic_name(1) = 'co'
+    data%chemic_name(2) = 'o3'
+    data%chemic_name(3) = 'n2o'
+    data%chemic_name(4) = 'no'
+    data%chemic_name(5) = 'no2'
+    data%chemic_name(6) = 'hno3'
+    data%chemic_name(7) = 'n2o5'
+    data%chemic_name(8) = 'ch4'
+    data%chemic_name(9) = 'pan'
+    data%chemic_name(10) = 'c2h6'
+    data%chemic_name(11) = 'ch3coch3'
+    data%chemic_name(12) = 'hcl'
+    data%chemic_name(13) = 'hocl'
+    data%chemic_name(14) = 'clono2'
+    data%chemic_name(15) = 'clo'
+    data%chemic_name(16) = 'hobr'
+    data%chemic_name(17) = 'hbr'
+    data%chemic_name(18) = 'brono2'
+    data%chemic_name(19) = 'bro'
+    data%chemic_name(20) = 'age'
+    data%chemic_name(21) = 'cl'
+    data%chemic_name(22) = 'cl2'
+    data%chemic_name(23) = 'cl2o2'
+    data%chemic_name(24) = 'br'
+    data%chemic_name(25) = 'brcl'
+    data%chemic_name(26) = 'extinction'
+
+    !--- register axis
+    call register_axis(restart, 'grid_xt', 'X')
+    call register_axis(restart, 'grid_yt', 'Y')
+    call register_axis(restart, 'pfull', 49)
+    !--- register the 2D fields
+      do num = 1,data%nvar_chemic
+        var3_p2 => data%chemic_var(:,:,:,num)
+        call register_restart_field(restart, data%chemic_name(num), var3_p2,dimensions=(/'pfull', 'grid_yt', 'grid_xt'/),&
+                                  &is_optional=.true.)
+      enddo
+
+  end subroutine catchem_am4_register_chemic
+
+  ! --------------------------------------------------------------------
+  !>@ Called after register_emi() to copy data from internal arrays to the model
+  !grid and deallocate arrays
+  subroutine catchem_am4_copy_chemic(data, Sfcprop, Atm_block)
+    implicit none
+    type(GFS_sfcprop_type),    intent(inout) :: Sfcprop(:)
+    class(catchem_am4_type) :: data
+    type(block_control_type), intent(in) :: Atm_block
+
+    integer :: num, nb, i, j, k, ix
+
+    if(.not.associated(data%chemic_name) .or. .not.associated(data%chemic_var)) then
+      write(0,*) 'ERROR: Called copy_chemic before register_emi'
+      return
+    endif
+
+    do num=1,data%nvar_chemic
+      !$omp parallel do default(shared) private(i, j, nb, ix)
+      do nb = 1, Atm_block%nblks
+        !--- 2D variables
+        do ix = 1, Atm_block%blksz(nb)
+          i = Atm_block%index(nb)%ii(ix) - Atm_block%isc + 1
+          j = Atm_block%index(nb)%jj(ix) - Atm_block%jsc + 1
+          do k = 1, 49
+            Sfcprop(nb)%chemic_in(ix,k,num)  = data%chemic_var(i,j,k,num)
+          enddo
+        enddo
+      enddo
+    enddo
+
+    deallocate(data%chemic_name)
+    nullify(data%chemic_name)
+    deallocate(data%chemic_var)
+    nullify(data%chemic_var)
+  end subroutine catchem_am4_copy_chemic
+
+  ! --------------------------------------------------------------------
+
+  !>@ Allocates temporary arrays and registers variables for reading the GOCART background file.
+  subroutine catchem_am4_register_dfdage(data, restart, Atm_block)
+    implicit none
+    class(catchem_am4_type) :: data
+    type(FmsNetcdfDomainFile_t) :: restart
+    type(block_control_type), intent(in) :: Atm_block
+
+    real(kind=kind_phys), pointer, dimension(:,:,:) :: var3_p2 => NULL()
+    integer :: num, nx, ny
+
+    if(associated(data%dfdage_name)) then
+      deallocate(data%dfdage_name)
+      nullify(data%dfdage_name)
+    endif
+
+    if(associated(data%dfdage_var)) then
+      deallocate(data%dfdage_var)
+      nullify(data%dfdage_var)
+    endif
+
+    call get_nx_ny_from_atm(Atm_block, nx, ny)
+    allocate(data%dfdage_name(data%nvar_dfdage))
+    allocate(data%dfdage_var(nx,ny,72,data%nvar_dfdage)) ! AM4 input
+
+    data%dfdage_name(1)  = 'dfdage_cfc11'
+    data%dfdage_name(2)  = 'dfdage_cfc12'
+    data%dfdage_name(3)  = 'dfdage_cfc113'
+    data%dfdage_name(4)  = 'dfdage_ccl4'
+    data%dfdage_name(5)  = 'dfdage_ch3cl'
+    data%dfdage_name(6)  = 'dfdage_ch3ccl3'
+    data%dfdage_name(7)  = 'dfdage_hcfc22'
+    data%dfdage_name(8)  = 'dfdage_bry'
+
+    !--- register axis
+    call register_axis(restart, 'grid_xt', 'X')
+    call register_axis(restart, 'grid_yt', 'Y')
+    call register_axis(restart, 'pfull', 72)
+    !--- register the 2D fields
+      do num = 1,data%nvar_dfdage
+        var3_p2 => data%dfdage_var(:,:,:,num)
+        call register_restart_field(restart, data%dfdage_name(num), var3_p2,dimensions=(/'pfull', 'grid_yt', 'grid_xt'/),&
+                                  &is_optional=.true.)
+      enddo
+
+  end subroutine catchem_am4_register_dfdage
+  ! --------------------------------------------------------------------
+
+  !>@ Called after register_emi() to copy data from internal arrays to the model
+  !grid and deallocate arrays
+  subroutine catchem_am4_copy_dfdage(data, Sfcprop, Atm_block)
+    implicit none
+    type(GFS_sfcprop_type),    intent(inout) :: Sfcprop(:)
+    class(catchem_am4_type) :: data
+    type(block_control_type), intent(in) :: Atm_block
+
+    integer :: num, nb, i, j, k, ix
+
+    if(.not.associated(data%dfdage_name) .or. .not.associated(data%dfdage_var)) then
+      write(0,*) 'ERROR: Called copy_dfdage before register_emi'
+      return
+    endif
+
+    do num=1,data%nvar_dfdage
+      !$omp parallel do default(shared) private(i, j, nb, ix)
+      do nb = 1, Atm_block%nblks
+        !--- 2D variables
+        do ix = 1, Atm_block%blksz(nb)
+          i = Atm_block%index(nb)%ii(ix) - Atm_block%isc + 1
+          j = Atm_block%index(nb)%jj(ix) - Atm_block%jsc + 1
+          do k = 1, 72  ! 
+            Sfcprop(nb)%dfdage_in(ix,k,num)  = data%dfdage_var(i,j,k,num)
+          enddo
+        enddo
+      enddo
+    enddo
+
+    deallocate(data%dfdage_name)
+    nullify(data%dfdage_name)
+    deallocate(data%dfdage_var)
+    nullify(data%dfdage_var)
+  end subroutine catchem_am4_copy_dfdage
+
+  ! --------------------------------------------------------------------
+
+  !>@ Allocates temporary arrays and registers variables for reading the depvel file
+  subroutine catchem_am4_register_depvel(data, restart, Atm_block)
+    implicit none
+    class(catchem_am4_type) :: data
+    type(FmsNetcdfDomainFile_t) :: restart
+    type(block_control_type), intent(in) :: Atm_block
+
+    real(kind=kind_phys), pointer, dimension(:,:) :: var2_p => NULL()
+    integer :: num, nx, ny
+
+    if(associated(data%depvel_name)) then
+      deallocate(data%depvel_name)
+      nullify(data%depvel_name)
+    endif
+
+    if(associated(data%depvel_var)) then
+      deallocate(data%depvel_var)
+      nullify(data%depvel_var)
+    endif
+
+    call get_nx_ny_from_atm(Atm_block, nx, ny)
+    allocate(data%depvel_name(data%nvar_depvel))
+    allocate(data%depvel_var(nx,ny,data%nvar_depvel))
+
+    data%depvel_name(1) = 'co'
+    data%depvel_name(2) = 'ch2o'
+    data%depvel_name(3) = 'o3'
+    data%depvel_name(4) = 'no'
+    data%depvel_name(5) = 'no2'
+    data%depvel_name(6) = 'hno3'
+    data%depvel_name(7) = 'hno4'
+    data%depvel_name(8) = 'n2o5'
+    data%depvel_name(9) = 'ch4'
+    data%depvel_name(10) = 'ch3ooh'
+    data%depvel_name(11) = 'h2o2'
+    data%depvel_name(12) = 'pan'
+    data%depvel_name(13) = 'pmn'
+    data%depvel_name(14) = 'ch3coch3'
+    data%depvel_name(15) = 'glyc'
+    data%depvel_name(16) = 'hac'
+    data%depvel_name(17) = 'rip'
+    data%depvel_name(18) = 'so2'
+    data%depvel_name(19) = 'nh3'
+    data%depvel_name(20) = 'hobr'
+    data%depvel_name(21) = 'hbr'
+    data%depvel_name(22) = 'brno3'
+
+    !--- register axis
+    call register_axis( restart, "grid_xt", 'X' )
+    call register_axis( restart, "grid_yt", 'Y' )
+    !--- register the 2D fields
+      do num = 1,data%nvar_depvel
+        var2_p => data%depvel_var(:,:,num)
+        call register_restart_field(restart, data%depvel_name(num), var2_p, dimensions=(/'grid_yt', 'grid_xt'/))
+      enddo
+
+  end subroutine catchem_am4_register_depvel
+
+  ! --------------------------------------------------------------------
+
+  !>@ Called after register_depvel() to copy data from internal arrays to the model grid and deallocate arrays
+  subroutine catchem_am4_copy_depvel(data, Sfcprop, Atm_block)
+    implicit none
+    type(GFS_sfcprop_type),    intent(inout) :: Sfcprop(:)
+    class(catchem_am4_type) :: data
+    type(block_control_type), intent(in) :: Atm_block
+
+    integer :: num, nb, i, j, ix
+
+    if(.not.associated(data%depvel_name) .or. .not.associated(data%depvel_var)) then
+      write(0,*) 'ERROR: Called copy_depvel before register_depvel'
+      return
+    endif
+
+    do num=1,data%nvar_depvel
+      !$omp parallel do default(shared) private(i, j, nb, ix)
+      do nb = 1, Atm_block%nblks
+        !--- 2D variables
+        do ix = 1, Atm_block%blksz(nb)
+          i = Atm_block%index(nb)%ii(ix) - Atm_block%isc + 1
+          j = Atm_block%index(nb)%jj(ix) - Atm_block%jsc + 1
+          Sfcprop(nb)%depvel_in(ix,num)  = data%depvel_var(i,j,num)
+        enddo
+      enddo
+    enddo
+
+    deallocate(data%depvel_name)
+    nullify(data%depvel_name)
+    deallocate(data%depvel_var)
+    nullify(data%depvel_var)
+  end subroutine catchem_am4_copy_depvel
+
+  ! --------------------------------------------------------------------
+
+  !>@ Destructor for catchem_am4_type
+  subroutine catchem_am4_final(data)
+    implicit none
+    type(catchem_am4_type) :: data
+
+    ! This #define reduces code length by a lot
+#define IF_ASSOC_DEALLOC_NULL(var) \
+    if(associated(data%var)) then ; \
+      deallocate(data%var) ; \
+      nullify(data%var) ; \
+    endif
+
+    IF_ASSOC_DEALLOC_NULL(emi_name)
+    IF_ASSOC_DEALLOC_NULL(gbbepx_name)
+    IF_ASSOC_DEALLOC_NULL(chemic_name)
+    IF_ASSOC_DEALLOC_NULL(dfdage_name)
+    IF_ASSOC_DEALLOC_NULL(depvel_name)
+    IF_ASSOC_DEALLOC_NULL(emi_var)
+    IF_ASSOC_DEALLOC_NULL(gbbepx_var)
+    IF_ASSOC_DEALLOC_NULL(chemic_var)
+    IF_ASSOC_DEALLOC_NULL(dfdage_var)
+    IF_ASSOC_DEALLOC_NULL(depvel_var)
+
+    ! Undefine this to avoid cluttering the cpp scope:
+#undef IF_ASSOC_DEALLOC_NULL
+  end subroutine catchem_am4_final
 
 end module fv3atm_catchem_io
 
