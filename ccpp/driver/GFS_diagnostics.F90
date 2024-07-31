@@ -5616,8 +5616,14 @@ module GFS_diagnostics
             ExtDiag(idx)%name = 'ebu_nh3'
             ExtDiag(idx)%desc = 'biomass burning emissions for NH3'
           case (4)
+            ExtDiag(idx)%name = 'ebu_so2'
+            ExtDiag(idx)%desc = 'biomass burning emissions for SO2'
+          case (5)
             ExtDiag(idx)%name = 'ebu_terp'
             ExtDiag(idx)%desc = 'biomass burning emissions for C10H16'
+          case (6)
+            ExtDiag(idx)%name = 'ebu_h2'
+            ExtDiag(idx)%desc = 'biomass burning emissions for H2'
         end select
 
         ExtDiag(idx)%axes = 2
@@ -5647,6 +5653,12 @@ module GFS_diagnostics
           case (4)
             ExtDiag(idx)%name = 'etot_so2'
             ExtDiag(idx)%desc = 'total emissions for SO2 exclude bmb'
+          case (5)
+            ExtDiag(idx)%name = 'etot_terp'
+            ExtDiag(idx)%desc = 'total emissions for C10H16 exclude bmb'
+          case (6)
+            ExtDiag(idx)%name = 'etot_h2'
+            ExtDiag(idx)%desc = 'total emissions for h2 exclude bmb'
         end select
 
         ExtDiag(idx)%axes = 2
@@ -5665,8 +5677,8 @@ module GFS_diagnostics
         idx = idx + 1
         select case (num)
           case (1)
-            ExtDiag(idx)%name = 'jo2'
-            ExtDiag(idx)%desc = 'photolysis rate of O2'
+            ExtDiag(idx)%name = 'jn2o'
+            ExtDiag(idx)%desc = 'photolysis rate of n2o'
           case (2)
             ExtDiag(idx)%name = 'jo1d'
             ExtDiag(idx)%desc = 'photolysis rate of O1D'
@@ -5808,6 +5820,30 @@ module GFS_diagnostics
       allocate (ExtDiag(idx)%data(nblks))
       do nb = 1,nblks
         ExtDiag(idx)%data(nb)%var3 => IntDiag(nb)%oh_loss(:,:)
+      enddo
+
+      idx = idx + 1
+      ExtDiag(idx)%axes = 3
+      ExtDiag(idx)%name = 'h2_prod'
+      ExtDiag(idx)%desc = 'h2 chemical production'
+      ExtDiag(idx)%unit = 'mol mol-1 s-1'
+      ExtDiag(idx)%mod_name = 'gfs_phys'
+      ExtDiag(idx)%intpl_method = 'bilinear'
+      allocate (ExtDiag(idx)%data(nblks))
+      do nb = 1,nblks
+        ExtDiag(idx)%data(nb)%var3 => IntDiag(nb)%h2_prod(:,:)
+      enddo
+
+      idx = idx + 1
+      ExtDiag(idx)%axes = 3
+      ExtDiag(idx)%name = 'h2_loss'
+      ExtDiag(idx)%desc = 'h2 chemical loss'
+      ExtDiag(idx)%unit = 'mol mol-1 s-1'
+      ExtDiag(idx)%mod_name = 'gfs_phys'
+      ExtDiag(idx)%intpl_method = 'bilinear'
+      allocate (ExtDiag(idx)%data(nblks))
+      do nb = 1,nblks
+        ExtDiag(idx)%data(nb)%var3 => IntDiag(nb)%h2_loss(:,:)
       enddo
 
       if (Model%me == Model%master  ) then

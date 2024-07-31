@@ -88,6 +88,15 @@ module fv3atm_restart_io_mod
   !>@ Filename template for monthly GB fire daa for CATChem. FMS may add grid and tile information to the name
   character(len=32), parameter  :: fn_gbbepx = 'FIRE_GBBEPx_data.nc'
 
+  !>@ Filename template for AM4 emissions data. FMS may add grid and tile information to the name
+  character(len=32), parameter  :: fn_emi3d    = 'EMI3D_data.nc'
+
+  !>@ Filename template for AM4 emissions data. FMS may add grid and tile information to the name
+  character(len=32), parameter  :: fn_emiairc  = 'EMIAIRC_data.nc'
+
+  !>@ Filename template for AM4 emissions data. FMS may add grid and tile information to the name
+  character(len=32), parameter  :: fn_emivol   = 'EMIVOL_data.nc'
+
   !>@ Filename template for chemical IC for CATChem with AM4 opt. FMS may add grid and tile information to the name
   character(len=32), parameter  :: fn_chemic = 'chemic_data.nc' 
 
@@ -554,7 +563,8 @@ contains
     type(Oro_io_data_type) :: oro
 
     type(FmsNetcdfDomainFile_t) :: Oro_restart, Sfc_restart, dust12m_restart,dust_restart, emi_restart, rrfssd_restart,&
-                                   emi2_restart, gbbepx_restart, chemic_restart, dfdage_restart, depvel_restart
+                                   emi2_restart, gbbepx_restart, chemic_restart, dfdage_restart, depvel_restart, &
+                                   emi3d_restart,emiairc_restart,emivol_restart
     type(FmsNetcdfDomainFile_t) :: Oro_ls_restart, Oro_ss_restart
 
     !--- OROGRAPHY FILE
@@ -762,6 +772,59 @@ contains
         call catchem_am4%copy_chemic(Sfcprop, Atm_block)
 
         !----------------------------------------------
+
+        if (Model%read_emis3d) then
+          !--- open emi3d files
+          infile=trim(indir)//'/'//trim(fn_emi3d)
+          amiopen=open_file(emi3d_restart, trim(infile), 'read', domain=fv_domain, is_restart=.true., dont_add_res_to_filename=.true.)
+          if (.not.amiopen) call mpp_error( FATAL, 'Error with opening file'//trim(infile) )
+
+          ! Register axes and variables, allocate memory
+          call catchem_am4%register_emi3d(emi3d_restart, Atm_block)
+
+          !--- read emi3d restart/data
+          call mpp_error(NOTE,'reading 3d biomass burning emissions from INPUT/EMI3D_data.tile*.nc')
+          call read_restart(emi3d_restart)
+          call close_file(emi3d_restart)
+
+          !--- Copy to Sfcprop and free temporary arrays:
+          call catchem_am4%copy_emi3d(Sfcprop, Atm_block)
+
+
+          !--- open 3d aircraft emis
+          infile=trim(indir)//'/'//trim(fn_emiairc)
+          amiopen=open_file(emiairc_restart, trim(infile), 'read', domain=fv_domain, is_restart=.true., dont_add_res_to_filename=.true.)
+          if (.not.amiopen) call mpp_error( FATAL, 'Error with opening file'//trim(infile) )
+
+          ! Register axes and variables, allocate memory
+          call catchem_am4%register_emiairc(emiairc_restart, Atm_block)
+
+          !--- read emiairc restart/data
+          call mpp_error(NOTE,'reading 3d aircraft emissions from INPUT/EMIAIRC_data.tile*.nc')
+          call read_restart(emiairc_restart)
+          call close_file(emiairc_restart)
+
+          !--- Copy to Sfcprop and free temporary arrays:
+          call catchem_am4%copy_emiairc(Sfcprop, Atm_block)
+
+
+          !--- open volcanic emis
+          infile=trim(indir)//'/'//trim(fn_emivol)
+          amiopen=open_file(emivol_restart, trim(infile), 'read', domain=fv_domain, is_restart=.true., dont_add_res_to_filename=.true.)
+          if (.not.amiopen) call mpp_error( FATAL, 'Error with opening file'//trim(infile) )
+
+          ! Register axes and variables, allocate memory
+          call catchem_am4%register_emivol(emivol_restart, Atm_block)
+
+          !--- read emivol restart/data
+          call mpp_error(NOTE,'reading 3d volcanic emissions from INPUT/EMIVOL_data.tile*.nc')
+          call read_restart(emivol_restart)
+          call close_file(emivol_restart)
+
+          !--- Copy to Sfcprop and free temporary arrays:
+          call catchem_am4%copy_emivol(Sfcprop, Atm_block)
+
+        endif
 
         !--- open dfdage file
         infile=trim(indir)//'/'//trim(fn_dfdage)

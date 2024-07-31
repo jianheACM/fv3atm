@@ -265,6 +265,9 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: depvel_in(:,:)   => null()  !< drydep velocity
     real (kind=kind_phys), pointer :: dust12m_in  (:,:,:) => null()  !< fengsha dust input
     real (kind=kind_phys), pointer :: emi_in (:,:) => null()  !< anthropogenic background input
+    real (kind=kind_phys), pointer :: emi3d_in_cplchp (:,:,:) => null()  !< vertically distributed biomass burning emissions
+    real (kind=kind_phys), pointer :: emiairc_in_cplchp (:,:,:) => null()  !< aircraft emissions
+    real (kind=kind_phys), pointer :: emivol_in_cplchp (:,:,:) => null()  !< volcanic emissions
     real (kind=kind_phys), pointer :: smoke_RRFS(:,:,:) => null()  !< RRFS fire input hourly
     real (kind=kind_phys), pointer :: smoke2d_RRFS(:,:) => null()  !< RRFS fire input daily
     real (kind=kind_phys), pointer :: z0base (:)   => null()  !< background or baseline surface roughness length in m
@@ -1572,6 +1575,7 @@ module GFS_typedefs
 
     !--- input data for catchem
     integer              :: nvar_emi
+    integer              :: nvar_emi3d, nvar_emiairc, nvar_emivol
     integer              :: nvar_gbbepx
     integer              :: nvar_chemic
     integer              :: nvar_gbbepxp2
@@ -1641,6 +1645,7 @@ module GFS_typedefs
 
 !-- chem nml variables for CATChem
     logical              :: read_chemic     !< flag for reading chemic
+    logical              :: read_emis3d     !< flag for reading 3d emission files
     logical              :: do_am4chem      !< flag for am4 chemistry
     integer              :: chem_opt        !JianHe: chemistry option for
                                             !combination of gas&aerosol scheme
@@ -2324,6 +2329,9 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: ch4_loss(:,:) => null()   !< CH4 chemical loss
     real (kind=kind_phys), pointer :: oh_prod(:,:) => null()    !< OH chemical production
     real (kind=kind_phys), pointer :: oh_loss(:,:) => null()    !< OH chemical loss
+    real (kind=kind_phys), pointer :: h2_prod(:,:) => null()    !< H2 chemical production
+    real (kind=kind_phys), pointer :: h2_loss(:,:) => null()    !< H2 chemical loss
+
 
     ! Auxiliary output arrays for debugging
     real (kind=kind_phys), pointer :: aux2d(:,:)  => null()    !< auxiliary 2d arrays in output (for debugging)
@@ -2538,8 +2546,11 @@ module GFS_typedefs
 
     !In the future, we only need one of them?
     if (Model%gaschem_opt == 1) then  
-      allocate (Sfcprop%chemic_in  (IM,49,26)) !49
+      allocate (Sfcprop%chemic_in  (IM,49,39)) !49
       allocate (Sfcprop%emi_in_cplchp (IM,30)) !JianHe: for AM4
+      allocate (Sfcprop%emi3d_in_cplchp (IM,7,16)) !JianHe: for AM4
+      allocate (Sfcprop%emiairc_in_cplchp (IM,25,3)) !JianHe: for AM4
+      allocate (Sfcprop%emivol_in_cplchp (IM,12,1)) !JianHe: for AM4
       allocate (Sfcprop%fire_GBBEPx (IM,21,35))
       allocate (Sfcprop%dfdage_in  (IM,72,8)) !72
       allocate (Sfcprop%depvel_in  (IM,22)) ! 22
@@ -2609,6 +2620,9 @@ module GFS_typedefs
     Sfcprop%smoke2d_RRFS= clear_val
     Sfcprop%dust_in   = clear_val
     Sfcprop%emi_in_cplchp    = clear_val
+    Sfcprop%emi3d_in_cplchp    = clear_val
+    Sfcprop%emiairc_in_cplchp    = clear_val
+    Sfcprop%emivol_in_cplchp    = clear_val
     Sfcprop%emi2_in   = clear_val
     Sfcprop%fire_MODIS  = clear_val
     Sfcprop%fire_GBBEPx = clear_val
@@ -4226,6 +4240,7 @@ module GFS_typedefs
     integer              :: gas_wetdep_opt = 0
     integer              :: cldchem_onoff = 0
     logical              :: read_chemic = .false.
+    logical              :: read_emis3d = .false.
     logical              :: do_am4chem = .false.
     integer              :: chem_in_opt = 0    
     integer              :: gas_bc_opt = 1
@@ -4456,7 +4471,7 @@ module GFS_typedefs
                                seas_opt_cplchp, seas_emis_scheme, seas_emis_scale,     &
                                wetdep_ls_cplchp, &
                                soa_opt, isoprene_SOA_yield, terpene_SOA_yield,         &
-                               use_interactive_BVOC_emis , &
+                               use_interactive_BVOC_emis , read_emis3d, &
                                restart_inname, restart_outname
 
 !--- other parameters
@@ -5208,6 +5223,20 @@ module GFS_typedefs
     Model%oz_phys_2015     = oz_phys_2015
     Model%h2o_phys         = h2o_phys
 
+!CATChem
+    Model%gaschem_opt       = gaschem_opt
+    Model%gas_drydep_opt    = gas_drydep_opt
+    Model%gas_wetdep_opt    = gas_wetdep_opt
+    Model%aerchem_opt       = aerchem_opt
+    Model%lnox_opt          = lnox_opt
+    Model%lght_no_prd_factor= lght_no_prd_factor
+    Model%min_land_frac_lght= min_land_frac_lght
+    Model%normalize_lght_no_prd_area=normalize_lght_no_prd_area
+    Model%soa_opt           = soa_opt
+    Model%isoprene_SOA_yield = isoprene_SOA_yield
+    Model%terpene_SOA_yield = terpene_SOA_yield
+    Model%use_interactive_BVOC_emis = use_interactive_BVOC_emis
+
     Model%aer_bc_opt        = aer_bc_opt
     Model%aer_ic_opt        = aer_ic_opt
     Model%aer_ra_feedback   = aer_ra_feedback
@@ -5240,6 +5269,7 @@ module GFS_typedefs
     Model%vertmix_onoff     = vertmix_onoff
     Model%aer_ra_frq        = aer_ra_frq
     Model%wetdep_ls_cplchp  = wetdep_ls_cplchp
+    Model%read_emis3d       = read_emis3d
     Model%restart_inname    = restart_inname
     Model%restart_outname   = restart_outname
 
@@ -5512,10 +5542,15 @@ module GFS_typedefs
 
 !--- AM4 chemistry option
 #ifdef AM4_CHEM
+    ! overwrite what in the namelist
     Model%do_am4chem       = .true.
-    Model%gaschem_opt      = 1  ! overwrite what in the namelist
+    Model%chem_opt         = 400
+    Model%gaschem_opt      = 1  
     Model%phot_opt         = 1
     Model%lnox_opt         = 1
+    Model%lght_no_prd_factor = lght_no_prd_factor
+    Model%min_land_frac_lght = min_land_frac_lght
+    Model%normalize_lght_no_prd_area = normalize_lght_no_prd_area
     Model%soa_opt          = 1
     Model%gas_drydep_opt   = 1
     Model%gas_wetdep_opt   = 1
@@ -5627,7 +5662,10 @@ module GFS_typedefs
 
     Model%nvar_emi = 30
     Model%nvar_gbbepx = 21
-    Model%nvar_chemic = 26
+    Model%nvar_chemic = 39
+    Model%nvar_emi3d = 16
+    Model%nvar_emiairc = 3
+    Model%nvar_emivol = 1
     endif !gaschem_opt
 
     Model%nvar_gbbepxp2 = Model%nvar_gbbepx + 2
@@ -7506,6 +7544,8 @@ module GFS_typedefs
       print *, ' restart_inname    : ', Model%restart_inname
       print *, ' restart_outname   : ', Model%restart_outname
       print *, ' nvar_chemic       : ', Model%nvar_chemic 
+      print *, ' read_emis3d       : ', Model%read_emis3d
+
       endif
 
       print *, ' '
@@ -8870,14 +8910,14 @@ module GFS_typedefs
       allocate (Diag%bioem(IM,4)) ! dms,isop,c10h16,lnox
       Diag%bioem = zero
 
-      allocate (Diag%bmbem(IM,4)) ! co,ch4,nh3,terp
+      allocate (Diag%bmbem(IM,6)) ! co,ch4,nh3,so2,terp,h2
       Diag%bmbem = zero
 
-      allocate (Diag%antem(IM,4)) ! co,ch4,nh3,so2
+      allocate (Diag%antem(IM,6)) ! co,ch4,nh3,so2,terp,h2
       Diag%antem = zero
 
     ! -- initialize photolysis rates
-    ! for gases (in order): o2(001), o1d(002), no2(006)  
+    ! for gases (in order): n2o(004), o1d(002), no2(006)  
       allocate(Diag%jval(IM,Model%levs,3))
       Diag%jval = zero
 
@@ -8904,6 +8944,10 @@ module GFS_typedefs
       Diag%oh_prod = zero
       allocate(Diag%oh_loss(IM,Model%levs))
       Diag%oh_loss = zero
+      allocate(Diag%h2_prod(IM,Model%levs))
+      Diag%h2_prod = zero
+      allocate(Diag%h2_loss(IM,Model%levs))
+      Diag%h2_loss = zero
     end if
 
   contains

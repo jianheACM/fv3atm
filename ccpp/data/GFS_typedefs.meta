@@ -987,6 +987,30 @@
   type = real
   kind = kind_phys
   active = (flag_for_am4_chemistry)
+[emi3d_in_cplchp]
+  standard_name = vertically_distributed_biomassburning_input_cplchp
+  long_name = vertically distributed biomassburning input cplchp
+  units = various
+  dimensions = (horizontal_loop_extent,7,16)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[emiairc_in_cplchp]
+  standard_name = aircraft_emission_input_cplchp
+  long_name = aircraft emission input cplchp
+  units = various
+  dimensions = (horizontal_loop_extent,25,3)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[emivol_in_cplchp]
+  standard_name = volcanic_emission_input_cplchp
+  long_name = volcanic emission input cplchp
+  units = various
+  dimensions = (horizontal_loop_extent,12,1)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
 [fire_GBBEPx]
   standard_name = emission_fire_GBBEPx
   long_name = emission fire GBBEPx
@@ -7189,6 +7213,12 @@
   units = flag
   dimensions = ()
   type = logical
+[read_emis3d]
+  standard_name = flag_for_reading_3d_emissions
+  long_name = flag for reading 3d emissions
+  units = flag
+  dimensions = ()
+  type = logical
 [do_am4chem]
   standard_name = flag_for_am4_chemistry
   long_name = flag for am4 chemistry
@@ -10150,23 +10180,23 @@
   active = (flag_for_am4_chemistry)
 [bmbem]
   standard_name = instantaneous_biomass_burning_emissions
-  long_name = instantaneous biomass burning emissions for co, ch4, nh3, and terp
+  long_name = instantaneous biomass burning emissions for co, ch4, nh3, so2, terp, and h2
   units = mol km-2 hr-1
-  dimensions = (horizontal_loop_extent,4)
+  dimensions = (horizontal_loop_extent,6)
   type = real
   kind = kind_phys
   active = (flag_for_am4_chemistry)
 [antem]
   standard_name = instantaneous_anthropogenic_emissions
-  long_name = instantaneous anthropogenic emissions for co, ch4, nh3, and so2
+  long_name = instantaneous anthropogenic emissions for co, ch4, nh3, so2, terp, and h2
   units = mol km-2 hr-1
-  dimensions = (horizontal_loop_extent,4)
+  dimensions = (horizontal_loop_extent,6)
   type = real
   kind = kind_phys
   active = (flag_for_am4_chemistry)
 [jval]
   standard_name = instantaneous_photolysis_rates
-  long_name = instantaneous photolysis rates for o2, o1d, no2
+  long_name = instantaneous photolysis rates for n2o, o1d, no2
   units = s-1
   dimensions = (horizontal_loop_extent,vertical_layer_dimension,3)
   type = real
@@ -10236,6 +10266,21 @@
   type = real
   kind = kind_phys
   active = (flag_for_am4_chemistry)
+[h2_prod]
+  standard_name = h2_chemical_production
+  long_name = h2 chemical production
+  units = mol mol-1 s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[h2_loss]
+  standard_name = h2_chemical_loss
+  long_name = h2 chemical loss
+  units = mol mol-1 s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
 [lwp_ex]
   standard_name = liq_water_path_from_microphysics
   long_name = total liquid water path from explicit microphysics
