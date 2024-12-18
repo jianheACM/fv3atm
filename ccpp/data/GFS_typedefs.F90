@@ -1558,6 +1558,7 @@ module GFS_typedefs
     integer              :: ntch3oh
     integer              :: ntc2h5oh
     integer              :: ntch3coch3
+    integer              :: ntch3cho
     integer              :: nth2
     integer              :: nte90
     integer              :: ntage
@@ -1646,6 +1647,7 @@ module GFS_typedefs
 !-- chem nml variables for CATChem
     logical              :: read_chemic     !< flag for reading chemic
     logical              :: read_emis3d     !< flag for reading 3d emission files
+    logical              :: read_emiairc    !< flag for reading aircraft emissions
     logical              :: do_am4chem      !< flag for am4 chemistry
     integer              :: chem_opt        !JianHe: chemistry option for
                                             !combination of gas&aerosol scheme
@@ -2549,9 +2551,9 @@ module GFS_typedefs
       allocate (Sfcprop%chemic_in  (IM,49,39)) !49
       allocate (Sfcprop%emi_in_cplchp (IM,30)) !JianHe: for AM4
       allocate (Sfcprop%emi3d_in_cplchp (IM,7,16)) !JianHe: for AM4
-      allocate (Sfcprop%emiairc_in_cplchp (IM,25,3)) !JianHe: for AM4
+      allocate (Sfcprop%emiairc_in_cplchp (IM,25,6)) !JianHe: for AM4
       allocate (Sfcprop%emivol_in_cplchp (IM,12,1)) !JianHe: for AM4
-      allocate (Sfcprop%fire_GBBEPx (IM,21,35))
+      allocate (Sfcprop%fire_GBBEPx (IM,22,35))
       allocate (Sfcprop%dfdage_in  (IM,72,8)) !72
       allocate (Sfcprop%depvel_in  (IM,22)) ! 22
     else ! gsl-gocart aerosol
@@ -3397,7 +3399,7 @@ module GFS_typedefs
       !-- chemistry coupling buffer
       !not used???
       if (Model%gaschem_opt == 1 .or. Model%do_am4chem) then
-        allocate (Coupling%buffer_ebu  (IM,Model%levs+1,1,23))
+        allocate (Coupling%buffer_ebu  (IM,Model%levs+1,1,24))
       else
         allocate (Coupling%buffer_ebu  (IM,Model%levs+1,1,7))
       endif
@@ -4241,6 +4243,7 @@ module GFS_typedefs
     integer              :: cldchem_onoff = 0
     logical              :: read_chemic = .false.
     logical              :: read_emis3d = .false.
+    logical              :: read_emiairc = .false.
     logical              :: do_am4chem = .false.
     integer              :: chem_in_opt = 0    
     integer              :: gas_bc_opt = 1
@@ -4471,7 +4474,7 @@ module GFS_typedefs
                                seas_opt_cplchp, seas_emis_scheme, seas_emis_scale,     &
                                wetdep_ls_cplchp, &
                                soa_opt, isoprene_SOA_yield, terpene_SOA_yield,         &
-                               use_interactive_BVOC_emis , read_emis3d, &
+                               use_interactive_BVOC_emis , read_emis3d, read_emiairc,  &
                                restart_inname, restart_outname
 
 !--- other parameters
@@ -5270,6 +5273,7 @@ module GFS_typedefs
     Model%aer_ra_frq        = aer_ra_frq
     Model%wetdep_ls_cplchp  = wetdep_ls_cplchp
     Model%read_emis3d       = read_emis3d
+    Model%read_emiairc      = read_emiairc
     Model%restart_inname    = restart_inname
     Model%restart_outname   = restart_outname
 
@@ -5653,6 +5657,7 @@ module GFS_typedefs
     Model%ntch3oh          = get_tracer_index(Model%tracer_names, 'ch3oh', Model%me, Model%master, Model%debug)
     Model%ntc2h5oh         = get_tracer_index(Model%tracer_names, 'c2h5oh', Model%me, Model%master, Model%debug)
     Model%ntch3coch3       = get_tracer_index(Model%tracer_names, 'ch3coch3', Model%me, Model%master, Model%debug)
+    Model%ntch3cho         = get_tracer_index(Model%tracer_names, 'ch3cho', Model%me, Model%master, Model%debug)
     Model%ntage            = get_tracer_index(Model%tracer_names, 'age', Model%me, Model%master, Model%debug)
     Model%ntoh             = get_tracer_index(Model%tracer_names, 'oh', Model%me, Model%master, Model%debug)
     Model%ntsoa            = get_tracer_index(Model%tracer_names, 'soa', Model%me, Model%master, Model%debug)
@@ -5661,10 +5666,10 @@ module GFS_typedefs
     Model%ntextinct        = get_tracer_index(Model%tracer_names, 'extinction', Model%me, Model%master, Model%debug)
 
     Model%nvar_emi = 30
-    Model%nvar_gbbepx = 21
+    Model%nvar_gbbepx = 22
     Model%nvar_chemic = 39
     Model%nvar_emi3d = 16
-    Model%nvar_emiairc = 3
+    Model%nvar_emiairc = 6
     Model%nvar_emivol = 1
     endif !gaschem_opt
 
@@ -7486,6 +7491,7 @@ module GFS_typedefs
       print *, ' ntch3oh           : ', Model%ntch3oh
       print *, ' ntc2h5oh          : ', Model%ntc2h5oh
       print *, ' ntch3coch3        : ', Model%ntch3coch3
+      print *, ' ntch3cho          : ', Model%ntch3cho
       print *, ' nth2              : ', Model%nth2
       print *, ' nte90             : ', Model%nte90
       print *, ' ntage             : ', Model%ntage
@@ -7545,6 +7551,7 @@ module GFS_typedefs
       print *, ' restart_outname   : ', Model%restart_outname
       print *, ' nvar_chemic       : ', Model%nvar_chemic 
       print *, ' read_emis3d       : ', Model%read_emis3d
+      print *, ' read_emiairc      : ', Model%read_emiairc
 
       endif
 

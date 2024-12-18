@@ -108,10 +108,10 @@ module fv3atm_catchem_io
   type catchem_am4_type
     integer, private :: nvar_emi = 30
     integer, private :: nvar_emi3d = 16
-    integer, private :: nvar_emiairc = 3
+    integer, private :: nvar_emiairc = 6
     integer, private :: nvar_emivol = 1
 
-    integer, private :: nvar_gbbepx = 21
+    integer, private :: nvar_gbbepx = 22
     integer, private :: nvar_chemic = 39
     integer, private :: nvar_dfdage = 8
     integer, private :: nvar_depvel = 22
@@ -813,7 +813,7 @@ contains
     data%emi_name(9)  = 'ero2'
     data%emi_name(10) = 'ero3'
     data%emi_name(11)  = 'e_no'
-    data%emi_name(12)  = 'e_no2'
+    data%emi_name(12)  = 'e_ch3cho'
     data%emi_name(13)  = 'e_nh3'
     data%emi_name(14)  = 'e_co'
     data%emi_name(15)  = 'e_ch4'
@@ -999,6 +999,9 @@ contains
     data%emiairc_name(1)  = 'airc_co'
     data%emiairc_name(2)  = 'airc_no'
     data%emiairc_name(3)  = 'airc_so2'
+    data%emiairc_name(4)  = 'airc_nh3'
+    data%emiairc_name(5)  = 'airc_bc'
+    data%emiairc_name(6)  = 'airc_oc'
 
     !--- register axis
     call register_axis( restart, "grid_xt", 'X' )
@@ -1028,6 +1031,8 @@ contains
       write(0,*) 'ERROR: Called copy_emiairc before register_emiairc'
       return
     endif
+
+    write(0,*)'read emiairc in min,max=',minval(data%emiairc_var(:,:,:,:)),maxval(data%emiairc_var(:,:,:,:))
 
     do num=1,data%nvar_emiairc
       !$omp parallel do default(shared) private(i, j, nb, ix)
@@ -1176,7 +1181,8 @@ contains
     data%gbbepx_name(18) = 'ebu_isop'
     data%gbbepx_name(19) = 'ebu_nh3'
     data%gbbepx_name(20) = 'ebu_no'
-    data%gbbepx_name(21) = 'ebu_c10h16'
+    data%gbbepx_name(21) = 'ebu_no2'
+    data%gbbepx_name(22) = 'ebu_c10h16'
 
     !--- register axis
     call register_axis(restart, 'lon', 'X')
