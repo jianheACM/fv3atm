@@ -12,5 +12,5 @@
   branch = dev-am4
 [submodule "upp"]
   path = upp
-  url = https://github.com/zhanglikate/UPP
-  branch = catchem
+  url = git@github.com:jianheACM/UPP.git
+  branch = dev-am4
