@@ -5622,8 +5622,8 @@ module GFS_diagnostics
             ExtDiag(idx)%name = 'ebu_terp'
             ExtDiag(idx)%desc = 'biomass burning emissions for C10H16'
           case (6)
-            ExtDiag(idx)%name = 'ebu_h2'
-            ExtDiag(idx)%desc = 'biomass burning emissions for H2'
+            ExtDiag(idx)%name = 'ebu_bc'
+            ExtDiag(idx)%desc = 'biomass burning emissions for BC'
         end select
 
         ExtDiag(idx)%axes = 2
@@ -5657,8 +5657,8 @@ module GFS_diagnostics
             ExtDiag(idx)%name = 'etot_terp'
             ExtDiag(idx)%desc = 'total emissions for C10H16 exclude bmb'
           case (6)
-            ExtDiag(idx)%name = 'etot_h2'
-            ExtDiag(idx)%desc = 'total emissions for h2 exclude bmb'
+            ExtDiag(idx)%name = 'etot_bc'
+            ExtDiag(idx)%desc = 'total emissions for BC exclude bmb'
         end select
 
         ExtDiag(idx)%axes = 2

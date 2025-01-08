@@ -8917,10 +8917,10 @@ module GFS_typedefs
       allocate (Diag%bioem(IM,4)) ! dms,isop,c10h16,lnox
       Diag%bioem = zero
 
-      allocate (Diag%bmbem(IM,6)) ! co,ch4,nh3,so2,terp,h2
+      allocate (Diag%bmbem(IM,6)) ! co,ch4,nh3,so2,terp,bc
       Diag%bmbem = zero
 
-      allocate (Diag%antem(IM,6)) ! co,ch4,nh3,so2,terp,h2
+      allocate (Diag%antem(IM,6)) ! co,ch4,nh3,so2,terp,bc
       Diag%antem = zero
 
     ! -- initialize photolysis rates
