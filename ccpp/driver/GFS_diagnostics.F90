@@ -5846,6 +5846,30 @@ module GFS_diagnostics
         ExtDiag(idx)%data(nb)%var3 => IntDiag(nb)%h2_loss(:,:)
       enddo
 
+      idx = idx + 1
+      ExtDiag(idx)%axes = 2
+      ExtDiag(idx)%name = 'ptrop'
+      ExtDiag(idx)%desc = 'tropopause pressure'
+      ExtDiag(idx)%unit = 'Pa'
+      ExtDiag(idx)%mod_name = 'gfs_phys'
+      ExtDiag(idx)%intpl_method = 'bilinear'
+      allocate (ExtDiag(idx)%data(nblks))
+      do nb = 1,nblks
+        ExtDiag(idx)%data(nb)%var2 => IntDiag(nb)%ptrop(:)
+      enddo
+
+      idx = idx + 1
+      ExtDiag(idx)%axes = 2
+      ExtDiag(idx)%name = 'tropoz'
+      ExtDiag(idx)%desc = 'tropospheric ozone column'
+      ExtDiag(idx)%unit = 'DU'
+      ExtDiag(idx)%mod_name = 'gfs_phys'
+      ExtDiag(idx)%intpl_method = 'bilinear'
+      allocate (ExtDiag(idx)%data(nblks))
+      do nb = 1,nblks
+        ExtDiag(idx)%data(nb)%var2 => IntDiag(nb)%tropoz(:)
+      enddo
+
       if (Model%me == Model%master  ) then
         print *,'in GFS_diagnostics total idx',idx
       endif

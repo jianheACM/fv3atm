@@ -1563,6 +1563,7 @@ module GFS_typedefs
     integer              :: nte90
     integer              :: ntage
     integer              :: ntoh
+    integer              :: nto3
     integer              :: ntsoa
     integer              :: ntso4
     integer              :: ntaoanh
@@ -1679,6 +1680,13 @@ module GFS_typedefs
                                             !0, no aerosol scheme
                                             !1=default, GSL gocart
                                             !2= TBD
+    integer              :: aer_wetdep_opt  !JianHe: wetdep scheme for aero, 
+                                            !0=default GSL aero wetdep
+                                            !1=AM4 aero wetdep
+    integer              :: aer_drydep_opt  !JianHe: drydep scheme for aero, 
+                                            !0=default GSL aero drydep
+                                            !1=AM4 aero drydep
+
     integer              :: lnox_opt
     real(kind=kind_phys) :: lght_no_prd_factor
     real(kind=kind_phys) :: min_land_frac_lght
@@ -2333,6 +2341,8 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: oh_loss(:,:) => null()    !< OH chemical loss
     real (kind=kind_phys), pointer :: h2_prod(:,:) => null()    !< H2 chemical production
     real (kind=kind_phys), pointer :: h2_loss(:,:) => null()    !< H2 chemical loss
+    real (kind=kind_phys), pointer :: ptrop(:) => null()      !< instantaneous tropopause pressure (Pa)
+    real (kind=kind_phys), pointer :: tropoz(:) => null()     !< instantaneous tropospheric ozone column (DU)
 
 
     ! Auxiliary output arrays for debugging
@@ -4240,6 +4250,8 @@ module GFS_typedefs
     integer              :: photdt = 450
     integer              :: gas_drydep_opt = 0
     integer              :: gas_wetdep_opt = 0
+    integer              :: aer_drydep_opt = 0
+    integer              :: aer_wetdep_opt = 0
     integer              :: cldchem_onoff = 0
     logical              :: read_chemic = .false.
     logical              :: read_emis3d = .false.
@@ -4460,6 +4472,7 @@ module GFS_typedefs
     NAMELIST /catchem_nml/                                                             &
                                chem_opt, chemdt, gaschem_onoff, gaschem_opt,           &
                                phot_opt, photdt, gas_drydep_opt, gas_wetdep_opt,       &
+                               aer_drydep_opt, aer_wetdep_opt,       &
                                cldchem_onoff, chem_in_opt, &
                                gas_bc_opt, gas_ic_opt, aer_bc_opt, aer_ic_opt,         &
                                aerchem_onoff,aerchem_opt,                              &
@@ -5230,6 +5243,8 @@ module GFS_typedefs
     Model%gaschem_opt       = gaschem_opt
     Model%gas_drydep_opt    = gas_drydep_opt
     Model%gas_wetdep_opt    = gas_wetdep_opt
+    Model%aer_drydep_opt    = aer_drydep_opt
+    Model%aer_wetdep_opt    = aer_wetdep_opt
     Model%aerchem_opt       = aerchem_opt
     Model%lnox_opt          = lnox_opt
     Model%lght_no_prd_factor= lght_no_prd_factor
@@ -5664,6 +5679,7 @@ module GFS_typedefs
     Model%ntso4            = get_tracer_index(Model%tracer_names, 'so4', Model%me, Model%master, Model%debug)
     Model%ntaoanh          = get_tracer_index(Model%tracer_names, 'aoanh', Model%me, Model%master, Model%debug)
     Model%ntextinct        = get_tracer_index(Model%tracer_names, 'extinction', Model%me, Model%master, Model%debug)
+    Model%nto3             = get_tracer_index(Model%tracer_names, 'o3', Model%me, Model%master, Model%debug)
 
     Model%nvar_emi = 30
     Model%nvar_gbbepx = 22
@@ -7500,6 +7516,7 @@ module GFS_typedefs
       print *, ' ntso4             : ', Model%ntso4
       print *, ' ntaoanh           : ', Model%ntaoanh
       print *, ' ntextinct         : ', Model%ntextinct
+      print *, ' nto3              : ', Model%nto3
       endif
       !
       print *, ' chem_opt          : ', Model%chem_opt
@@ -7511,6 +7528,8 @@ module GFS_typedefs
       print *, ' photdt            : ', Model%photdt
       print *, ' gas_drydep_opt    : ', Model%gas_drydep_opt
       print *, ' gas_wetdep_opt    : ', Model%gas_wetdep_opt
+      print *, ' aer_drydep_opt    : ', Model%aer_drydep_opt
+      print *, ' aer_wetdep_opt    : ', Model%aer_wetdep_opt
       print *, ' cldchem_onoff     : ', Model%cldchem_onoff
       print *, ' chem_in_opt       : ', Model%chem_in_opt
       print *, ' gas_bc_opt        : ', Model%gas_bc_opt
@@ -8955,6 +8974,14 @@ module GFS_typedefs
       Diag%h2_prod = zero
       allocate(Diag%h2_loss(IM,Model%levs))
       Diag%h2_loss = zero
+
+
+    ! -- initialize 
+      allocate(Diag%ptrop(IM))
+      Diag%ptrop = zero 
+
+      allocate(Diag%tropoz(IM))
+      Diag%tropoz = zero
     end if
 
   contains

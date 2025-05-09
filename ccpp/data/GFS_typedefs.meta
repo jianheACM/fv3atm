@@ -7043,6 +7043,12 @@
   units = index
   dimensions = ()
   type = integer
+[nto3]
+  standard_name = index_for_o3
+  long_name = index for o3
+  units = index
+  dimensions = ()
+  type = integer
 [ntsoa]
   standard_name = index_for_soa
   long_name = index for soa
@@ -7264,6 +7270,18 @@
 [gas_wetdep_opt]
   standard_name = catchem_gas_wetdep_option
   long_name = catchem gas large scale wet deposition scheme
+  units = index
+  dimensions = ()
+  type = integer
+[aer_drydep_opt]
+  standard_name = catchem_aer_drydep_option
+  long_name = catchem aerosol dry deposition scheme
+  units = index
+  dimensions = ()
+  type = integer
+[aer_wetdep_opt]
+  standard_name = catchem_aer_wetdep_option
+  long_name = catchem aerosol large scale wet deposition scheme
   units = index
   dimensions = ()
   type = integer
@@ -10203,6 +10221,22 @@
   long_name = instantaneous anthropogenic emissions for co, ch4, nh3, so2, terp, and bc
   units = mol km-2 hr-1
   dimensions = (horizontal_loop_extent,6)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[ptrop]
+  standard_name = instantaneous_tropopause_pressure
+  long_name = instantaneous tropopause pressure
+  units = Pa
+  dimensions = (horizontal_loop_extent)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
+[tropoz]
+  standard_name = instantaneous_tropospheric_ozone_column
+  long_name = instantaneous tropospheric ozone column
+  units = DU
+  dimensions = (horizontal_loop_extent)
   type = real
   kind = kind_phys
   active = (flag_for_am4_chemistry)
