@@ -5672,6 +5672,20 @@ module GFS_diagnostics
       enddo
       endif
 
+      if (associated(IntDiag(1)%ptrop)) then
+        idx = idx + 1
+        ExtDiag(idx)%axes = 2
+        ExtDiag(idx)%name = 'ptrop'
+        ExtDiag(idx)%desc = 'tropopause pressure'
+        ExtDiag(idx)%unit = 'Pa'
+        ExtDiag(idx)%mod_name = 'gfs_phys'
+        ExtDiag(idx)%intpl_method = 'bilinear'
+        allocate (ExtDiag(idx)%data(nblks))
+        do nb = 1,nblks
+          ExtDiag(idx)%data(nb)%var2 => IntDiag(nb)%ptrop(:)
+        enddo
+      endif
+
       if (associated(IntDiag(1)%jval)) then
       do num = 1, size(IntDiag(1)%jval, dim=3)
         idx = idx + 1

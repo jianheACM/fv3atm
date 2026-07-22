@@ -10206,6 +10206,14 @@
   type = real
   kind = kind_phys
   active = (flag_for_am4_chemistry)
+[ptrop]
+  standard_name = instantaneous_tropopause_pressure
+  long_name = instantaneous tropopause pressure
+  units = Pa
+  dimensions = (horizontal_loop_extent)
+  type = real
+  kind = kind_phys
+  active = (flag_for_am4_chemistry)
 [jval]
   standard_name = instantaneous_photolysis_rates
   long_name = instantaneous photolysis rates for n2o, o1d, no2

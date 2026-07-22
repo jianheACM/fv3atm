@@ -2322,6 +2322,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: bmbem(:,:) => null()    !< instantaneous biomass burnrning emissions for co, ch4, nh3, and terp  ( mol km^-2 hr^-1 )
     real (kind=kind_phys), pointer :: antem(:,:) => null()    !< instantaneous anthropogenic emissions for co, ch4, so2,and nh3 ( mol km^-2 hr^-1 )
 
+    real (kind=kind_phys), pointer :: ptrop(:) => null()    !< instantaneous tropopause pressure (Pa)
     real (kind=kind_phys), pointer :: jval(:,:,:) => null()    !< instantaneous photolysis rates
     real (kind=kind_phys), pointer :: ddep(:,:) => null()    !< instantaneous dry deposition  ( kg/m**2/s )
     real (kind=kind_phys), pointer :: wdep(:,:) => null()    !< instantaneous wet deposition  ( kg/m**2/s )
@@ -8922,6 +8923,10 @@ module GFS_typedefs
 
       allocate (Diag%antem(IM,6)) ! co,ch4,nh3,so2,terp,bc
       Diag%antem = zero
+
+    ! -- initialize tropopause pressure
+      allocate(Diag%ptrop(IM))
+      Diag%ptrop = zero
 
     ! -- initialize photolysis rates
     ! for gases (in order): n2o(004), o1d(002), no2(006)  
